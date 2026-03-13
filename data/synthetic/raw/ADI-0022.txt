@@ -1,0 +1,26 @@
+**DIARIO CLINICO**
+**Record ID:** ADI-0022
+**Data e ora visita:** 17/03/2026 - 14:30
+
+**Anamnesi breve:**
+
+**Esami clinici:**
+
+* **Pressione arteriosa sistolica:** 140 mmHg
+* **Pressione arteriosa diastolica:** 70 mmHg
+* **Frequenza cardiaca:** 65 bpm
+* **Temperatura corporea:** 36,2°C
+* **SpO2:** 97%
+
+**Interventi:**
+
+* Monitoraggio dei parametri vitali
+
+**Segnalazioni critiche:**
+
+Nessuna segnalazione critica presente.
+
+**Follow-up:**
+Prossimo controllo in data non specificata (da definire).
+
+Nota: La presenza di "sex" null nel JSON ha comportato l'omissione della corrispondente informazione nel diario clinico.

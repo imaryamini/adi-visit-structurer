@@ -1,0 +1,19 @@
+**DIARIO CLINICO**
+
+**Data e ora:** 07/03/2026 ore 16:40
+
+**Visitatore:** Infermiere ADI
+
+**Motivo visita:** Controllo parametri.
+
+**Parametri vitali:**
+
+- Pressione sistolica: 140 mmHg
+- Pressione diastolica: 90 mmHg
+- Frequenza cardiaca: 90 bpm
+- Temperatura corporea: 36,5 °C
+
+**Interventi eseguiti:** Monitoraggio dei parametri vitali.
+
+**Seguimento medico:**
+Controllo generico in data imprecisata per controllo.

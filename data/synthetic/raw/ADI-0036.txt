@@ -1,0 +1,26 @@
+**ADI-0036 - Diario Clinico**
+
+**Data e ora**: 11/03/2026 - 18:40
+
+**Paziente**:
+* Nome non presente nel record
+* Età: 81 anni
+* Sesso: Maschio
+
+**Motivazione della visita**: Rivalutazione caduta recente
+
+**Parametri Vitali**:
+- Pressione arteriosa sistolica: 120 mmHg
+- Pressione arteriosa diastolica: 70 mmHg
+- Frequenza cardiaca: 78 bpm
+- Temperatura corporea: 36,5 °C
+- SpO2: 96%
+
+**Interventi eseguiti**:
+- Monitoraggio parametri vitali
+- Valutazione generale
+
+**Problemi attuali**:
+- Caduta recente
+
+**Seguimento**: Controllo senza tempistica definita

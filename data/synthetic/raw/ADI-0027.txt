@@ -1,0 +1,23 @@
+**Registrazione clinica - ADI-0027**
+
+**Data e ora:** 19/02/2026, ore 16:00
+
+**Patienti:**
+- Id. paziente: SYNTH-ADI-0027
+- Età: 89 anni
+- Sesso: M
+
+**Stato attuale:**
+
+La persona in questione è stata visitata per una **rivalutazione caduta recente**.
+I parametri vitali registrati sono:
+ - Pressione arteriosa sistolica: 130 mmHg
+ - Pressione arteriosa diastolica: 85 mmHg
+ - Frequenza cardiaca: 65 bpm
+ - Temperatura: 36,7 °C
+
+Durante la visita è stata eseguita una **valutazione generale** e un **monitoraggio dei parametri vitali**.
+
+Il paziente presenta come problema critico **una caduta recente**.
+
+È necessario un controllo per valutare lo stato del paziente, ma non è possibile fissare una data precisa per tale attività.

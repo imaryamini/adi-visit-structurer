@@ -1,0 +1,37 @@
+**DIARIO CLINICO**
+
+**DATI PATIENTE**
+
+* Nome: non disponibile
+* Età: non disponibile
+* Sesso: Femmina
+
+**VISITA DATI**
+
+* Data e ora della visita: 27/02/2026 - 08:10
+
+**ANAMNESI**
+
+* Motivo di visita: medicazione/controllo lesione
+* Breve anamnesi: nessuna informazione disponibile
+
+**VITALI**
+
+* Pressione arteriosa sistolica: 130 mmHg
+* Pressione arteriosa diastolica: 90 mmHg
+* Frequenza cardiaca: 65 bpm
+* Temperatura corporea: 37,8°C
+
+**INTERVENTIONI TERAPEUTICHE**
+
+* Medicazione
+* Valutazione generale
+
+**CONCLUSIONI E PRESCRIZIONI**
+
+Nessuna informazione disponibile
+
+**FOLLOW-UP**
+
+* Tipo di follow-up: controllo ferita
+* Data prevista per il follow-up: non disponibile (7 giorni dalla data di oggi)

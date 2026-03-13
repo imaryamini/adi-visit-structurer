@@ -1,0 +1,19 @@
+**DIARIO CLINICO**
+Data: 19/02/2026 - Ora: 11:50
+Codice visita: ADI-0020
+
+* Paciente:
+ + Sesso: Femmina
+ + Età: sconosciuta
+* Anamnesi brevettata: assente
+* Motivazione visita: rivalutazione caduta recente
+* Parametri vitali:
+ + Pressione arteriosa sistolica: 120 mmHg
+ + Pressione arteriosa diastolica: 85 mmHg
+ + Frequenza cardiaca: 72 bpm
+ + Temperatura corporea: 36,2°C
+* Interventi eseguiti:
+ + Monitoraggio parametri vitali
+ + Valutazione generale
+* Problemi rilevati:
+ + Caduta recente

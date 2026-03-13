@@ -1,0 +1,23 @@
+**Diario Clinico - ADI-0071**
+
+**Data e ora: 03/03/2026, ore 15:30**
+
+**Motivo visita:** Rivalutazione caduta recente.
+
+**Parametri vitali:**
+
+* Pressione sistolica: 130 mmHg
+* Pressione diastolica: 70 mmHg
+* Frequenza cardiaca: 72 bpm
+* Temperatura corporea: 36,5°C
+* SpO2: 98%
+
+**Interventi eseguiti:**
+
+1. Monitoraggio parametri vitali.
+2. Valutazione generale.
+
+**Problemi principali:** Caduta recente.
+
+**Follow-up:**
+Da programmare per controllo senza specificare giorni di anticipazione.

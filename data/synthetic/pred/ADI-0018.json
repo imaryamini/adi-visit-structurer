@@ -1,0 +1,45 @@
+{
+  "meta": {
+    "record_id": "ADI-0018",
+    "template_type": [
+      "diario_clinico"
+    ],
+    "visit_datetime": null,
+    "operator_role": "infermiere",
+    "extraction_mode": "hybrid",
+    "llm_model": "llama3.1:8b",
+    "pipeline_version": "0.3.0",
+    "generated_at": "2026-03-13T16:29:17"
+  },
+  "patient": {
+    "patient_id": "SYNTH-ADI-0018",
+    "age": null,
+    "sex": null
+  },
+  "clinical": {
+    "reason_for_visit": "controllo terapia/somministrazione farmaco",
+    "anamnesis_brief": [],
+    "vitals": {
+      "blood_pressure_systolic": null,
+      "blood_pressure_diastolic": null,
+      "heart_rate": 98,
+      "temperature": 36.5,
+      "spo2": 99
+    },
+    "consciousness": null,
+    "mobility": null,
+    "interventions": [
+      "monitoraggio_parametri_vitali"
+    ],
+    "critical_issues": [],
+    "follow_up": "prossimo controllo in 7 giorni (controllo)"
+  },
+  "coding": {
+    "problems_normalized": [],
+    "problems_suspects": []
+  },
+  "quality": {
+    "missing_mandatory_fields": [],
+    "warnings": []
+  }
+}

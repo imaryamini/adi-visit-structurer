@@ -1,0 +1,37 @@
+**Record clinico ADI-0037**
+
+**Data e ora:** 19/02/2026 ore 10:10
+
+**Paziente:**
+
+* Età: non disponibile
+* Sesso: maschio (M)
+
+**Anamnesi sintetica:**
+
+* Nessuna informazione riportata
+
+**Motivo della visita:**
+
+Medicazione e controllo lesione
+
+**Vitali:**
+
+- Pressione arteriosa sistolica: 150 mmHg
+- Pressione arteriosa diastolica: 90 mmHg
+- Frequenza cardiaca: 60 bpm
+- Temperatura corporea: 37,8°C
+- SpO2: 96%
+
+**Interventi:**
+
+* Medicazione
+* Valutazione generale
+
+**Problemi rilevati:**
+
+* Dolore (Dolore)
+
+**Seguente visita:**
+
+Prossimo controllo per la lesione in data e ora da stabilire, previo monitoraggio.

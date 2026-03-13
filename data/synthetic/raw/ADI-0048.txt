@@ -1,0 +1,15 @@
+**DIARIO CLINICO**
+Data: 27/02/2026 Ora: 13:00
+
+* **Dato di visita**: 2026-02-27T13:00:00
+* **Motivo visita**: Controllo parametri vitali
+* **Anamnesi**: - Nessun elemento riportato
+* **Parametri vitali**:
+ + Pressione arteriosa sistolica: 150 mmHg
+ + Pressione arteriosa diastolica: 80 mmHg
+ + Frequenza cardiaca: 90 bpm
+ + Temperatura corporea: 37.1°C
+ + SpO2: 97%
+* **Interventi**:
+ + Monitoraggio parametri vitali
+* **Seguimento**: Prossimo controllo in 7 giorni (controllo)

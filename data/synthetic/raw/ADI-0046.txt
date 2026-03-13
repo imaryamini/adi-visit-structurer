@@ -1,0 +1,20 @@
+**DIARIO CLINICO**
+**Paziente:** SYNTH-ADI-0046
+**Sesso:** F
+**Data e ora della visita:** 14/02/2026 - 12:00
+
+**Anamnesi brevett**: Nessuna informazione disponibile.
+
+**Vitali**:
+• Pressione arteriosa sistolica: 140 mmHg;
+• Pressione arteriosa diastolica: 85 mmHg;
+• Frequenza cardiaca: 90 bpm;
+• Temperatura corporea: 36,5°C
+
+**Interventi eseguiti:**
+- Somministrazione farmaco
+- Educazione terapeutica
+
+**Segnalazioni critiche:** Nessuna segnalazione critica presente.
+
+**Pianificazione di follow-up:** Controllo in 2 giorni.

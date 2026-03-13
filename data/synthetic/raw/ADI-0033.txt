@@ -1,0 +1,23 @@
+**DIARIO CLINICO**
+
+**Data e ora:** 11/02/2026 ore 10:40
+
+** Paziente:**
+
+- **Id paziente:** SYNTH-ADI-0033
+- **Età:** (non specificata)
+- **Sesso:** Maschio
+
+**Anamnesi brevi:** Nessuna informazione disponibile
+
+**Estratto di laboratorio e analisi:**
+
+- **Pressione sistolica:** 140 mmHg
+- **Pressione diastolica:** 85 mmHg
+- **Frequenza cardiaca:** 65 bpm
+- **Temperatura corporea:** 37,8°C
+
+**Interventi eseguiti:**
+
+- Medicazione
+- Valutazione generale

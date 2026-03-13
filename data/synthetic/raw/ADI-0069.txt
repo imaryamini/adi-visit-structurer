@@ -1,0 +1,15 @@
+**Dettatura del diario clinico - ADI-0069**
+
+**Data e ora:** 28/02/2026 ore 15:00
+
+**Parametri vitali:**
+
+* Tensione arteriosa sistolica: 130 mmHg
+* Tensione arteriosa diastolica: 85 mmHg
+* Frequenza cardiaca: 72 bpm
+* Temperatura corporea: 36,7°C
+* SpO2: 98%
+
+**Interventi:** Monitoraggio dei parametri vitali
+
+**Follow-up:** Controllo in 7 giorni

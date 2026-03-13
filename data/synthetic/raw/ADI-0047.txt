@@ -1,0 +1,29 @@
+**DIARIO CLINICO**
+
+20/02/2026, 12:00
+
+**DATI PATIENTE**
+
+* Sesso: F
+* Età: non disponibile
+
+**ANAMNESI**
+
+* Motivo visita: medicazione/controllo lesione
+* Anamnesi breve:
+ 
+**ESAME CLINICO**
+
+* Pressione arteriosa sistolica: 150 mmHg
+* Pressione arteriosa diastolica: 80 mmHg
+* Frequenza cardiaca: 72 bpm
+* Temperatura corporea: 37.1°C
+
+**INTERVENTI ECONOMIZZATE**
+
+* Medicazione
+* Valutazione generale
+
+**COMPITTI DI SEGUIMENTO**
+
+* Controllo lesione in 2 giorni

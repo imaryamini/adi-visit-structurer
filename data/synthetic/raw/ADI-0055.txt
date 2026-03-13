@@ -1,0 +1,12 @@
+**DIARIO CLINICO**
+
+02/03/2026 ore 15:10
+
+
+**Paziente:** SYNTH-ADI-0055
+**Controllo terapia/somministrazione farmaco**
+
+* Pressione arteriosa sistolica: 150 mmHg
+* Pressione arteriosa diastolica: 90 mmHg
+* Frequenza cardiaca: 98 bpm
+* Temperatura: 37,8°C

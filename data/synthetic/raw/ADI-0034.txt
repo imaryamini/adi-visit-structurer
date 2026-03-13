@@ -1,0 +1,14 @@
+**ADI-0034 - 10/02/2026 18:00**
+
+* Paziente: femmina
+* Motivo visita: riferiti sintomi generali
+* Anamnesi breve: nessuna annotazione
+* Parametri vitali:
+ + Pressione arteriosa sistolica e diastolica: non misurata
+ + Frequenza cardiaca: non misurata
+ + Temperatura: non misurata
+* Interventi eseguiti: valutazione generale, educazione alimentare
+* Problemi clinici attuali:
+ + Inappetenza
+ + Nausea
+* Rischi identificati: rischio di malnutrizione

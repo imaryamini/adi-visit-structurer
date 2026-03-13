@@ -1,0 +1,40 @@
+**Record Clinico**
+
+**Data e ora**: 26/02/2026, ore 13:20
+
+**Paziente**
+
+* Età: 82 anni
+* Sesso: sconosciuto
+
+**Vitali**
+
+* Pressione arteriosa sistolica: 130 mmHg
+* Pressione arteriosa diastolica: 80 mmHg
+* Frequenza cardiaca: 72 bpm
+* Temperatura corporea: 36,5°C
+* SpO2: 96%
+
+**Motivo visita**: medicazione/controllo lesione
+
+**Anamnesi**
+
+ Nessuna informazione disponibile
+
+**Interventi eseguiti**
+
+* Medicazione
+* Valutazione generale
+
+**Problemi normalizzati**
+
+* Dolore
+
+**Condizioni critiche**
+
+ Nessuna condizione critica segnalata
+
+**Follow-up**
+
+* Tipo: controllo ferita
+* Ritorno nel tempo: 2 giorni

@@ -1,0 +1,23 @@
+**DIARIO CLINICO**
+
+**Data e ora:** 04/03/2026 - 10:40
+
+** Paziente:** SYNTH-ADI-0018, sesso non specificato, 68 anni.
+
+**Presenza clinica:**
+
+* Motivo visita: controllo terapia/somministrazione farmaco.
+* Tensione arteriosa sistolica: 130 mmHg.
+* Tensione arteriosa diastolica: 80 mmHg.
+* Frequenza cardiaca: 98 bpm.
+* Temperatura corporea: 36,5°C.
+* SpO2: 99%.
+
+**Somministrazione farmaco**
+
+* Educata sulla terapia.
+
+**Seguimento:**
+Prossimo controllo in 7 giorni (controllo).
+
+Nota: nel diario clinico è riportato anche il "warning" Farmaco menzionato senza dose.

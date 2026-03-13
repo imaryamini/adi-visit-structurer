@@ -1,0 +1,18 @@
+Ecco la dettatura in stile appunti clinici basata sul record JSON:
+
+**DIARIO CLINICO - ADI-0054**
+
+**gg/mm/aaaa ore hh:mm:** 07/03/2026 08:20
+
+**Rapporto della visita del giorno:**
+
+La paziente si è presentata con sintomi generali. Eseguita valutazione generale ed educazione terapeutica.
+
+**Parametri vitali non disponibili.**
+
+**Problemi attuali:** nausea, inappetenza.
+**Segnali di rischio:** malnutrizione.
+
+**Prossimo contatto:** ricontatto telefonico con il caregiver (nessuna tempistica prevista).
+
+Nota: è importante evidenziare la mancanza di informazioni sui parametri vitali e sulle tempistiche del follow-up.

@@ -1,0 +1,20 @@
+**Diario Clinico - ADI-0064**
+
+* **Data e ora:** 07/03/2026 ore 08:10
+* **Paziente:** 
+ + Età: 65 anni
+ + Sesso: Maschio
+* **Motivo visita:** riferiti sintomi generali
+* **Anamnesi:** 
+ + Breve anamnesi: assente
+* **Segni e sintomi:** 
+ + Insonnia
+ + Nausea
+* **Vitali:** 
+ + Pressione arteriosa sistolica: non disponibile
+ + Pressione arteriosa diastolica: non disponibile
+ + Frequenza cardiaca: non disponibile
+ + Temperatura corporea: non disponibile
+* **Interventi:** 
+ + Valutazione generale
+ + Educazione terapeutica

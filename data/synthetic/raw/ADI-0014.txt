@@ -1,0 +1,15 @@
+**Dettatura del diario clinico**
+
+11/03/2026 ore 13:20
+
+- **Id Paziente:** SYNTH-ADI-0014
+- **Età:** sconosciuta
+- **Sesso:** M
+- **Ora della visita:** 13:20
+- **Parametri vitali:**
+	+ Pressione sistolica: 110 mmHg
+	+ Pressione diastolica: 85 mmHg
+	+ Frequenza cardiaca: 90 bpm
+	+ Temperatura corporea: 37,1°C
+
+Firma infermiere

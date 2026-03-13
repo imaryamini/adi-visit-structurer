@@ -1,0 +1,7 @@
+**04/03/2026 ore 17:20**
+
+* Visita del paziente SYNTH-ADI-0025.
+* Motivo della visita: controllo parametri vitali.
+* **Pressione arteriosa:** 140/90 mmHg
+* Frequenza cardiaca: 78 bpm
+* Temperatura corporea: 36,7°C

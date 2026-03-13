@@ -1,0 +1,47 @@
+{
+  "meta": {
+    "record_id": "ADI-0013",
+    "template_type": [
+      "diario_clinico"
+    ],
+    "visit_datetime": null,
+    "operator_role": "infermiere",
+    "extraction_mode": "hybrid",
+    "llm_model": "llama3.1:8b",
+    "pipeline_version": "0.2.0"
+  },
+  "patient": {
+    "patient_id": "SYNTH-ADI-0013",
+    "age": null,
+    "sex": null
+  },
+  "clinical": {
+    "reason_for_visit": "stanchezza e scarso appetito",
+    "anamnesis_brief": [],
+    "vitals": {
+      "blood_pressure_systolic": null,
+      "blood_pressure_diastolic": null,
+      "heart_rate": null,
+      "temperature": null,
+      "spo2": null
+    },
+    "consciousness": null,
+    "mobility": null,
+    "interventions": [],
+    "critical_issues": [],
+    "follow_up": "ricontatto telefonico con caregiver"
+  },
+  "coding": {
+    "problems_normalized": [
+      "malnutrizione"
+    ],
+    "problems_suspects": []
+  },
+  "quality": {
+    "missing_mandatory_fields": [],
+    "warnings": [
+      "No interventions extracted from note",
+      "No vital signs recorded in note"
+    ]
+  }
+}

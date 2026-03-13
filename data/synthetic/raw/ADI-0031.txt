@@ -1,0 +1,15 @@
+**DIARIO CLINICO**
+
+**Record ID:** ADI-0031
+**Data e ora:** 04/03/2026 ore 18:00
+
+* **Sintesi visita:** controllo lesione (medicazione)
+* **Temperatura:** 37,1°C
+* **Pressione arteriosa sistolica:** 120 mmHg
+* **Pressione arteriosa diastolica:** 90 mmHg
+* **Frequenza cardiaca:** 65 bpm
+
+**Interventi:**
+
+- Medicazione
+- Valutazione generale

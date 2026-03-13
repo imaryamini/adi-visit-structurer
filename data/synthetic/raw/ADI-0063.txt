@@ -1,0 +1,21 @@
+**Riassunto di visita del giorno 19/02/2026 alle ore 16:20**
+
+**Paziente:** ID paziente SYNTH-ADI-0063, sesso M.
+
+**Motivo della visita:** Medicazione e controllo lesione.
+
+**Vitali:**
+
+* Pressione arteriosa sistolica: 150 mmHg
+* Pressione arteriosa diastolica: 85 mmHg
+* Frequenza cardiaca: 60 bpm
+* Temperatura corporea: 36,7°C
+
+**Interventi eseguiti:**
+
+* Medicazione
+* Valutazione generale
+
+**Problemi e rischi:** Doloro.
+
+**Seguimento:** Controllo ferita in data 22/02/2026.

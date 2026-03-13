@@ -1,0 +1,30 @@
+**DIARIO CLINICO**
+
+Data e ora: 11/02/2026 - 18:40
+
+**Paziente:** 
+- Codice paziente: SYNTH-ADI-0057
+- Sesso: Femmina
+
+**Motivo della visita:** Rivalutazione caduta recente
+
+**Segni e sintomi:** 
+
+* Tensione arteriosa sistolica: 140 mmHg
+* Tensione arteriosa diastolica: 70 mmHg
+* Frequenza cardiaca: 98 bpm
+* Temperatura corporea: 37,8°C
+* SpO2: 96%
+
+**Interventi eseguiti:**
+
+* Monitoraggio dei parametri vitali
+* Valutazione generale
+
+**Problemi e complessità clinica:** 
+
+* Caduta recente
+
+**Follow-up:**
+- Tipo di controllo: Controllo
+- Data e ora del prossimo controllo non specificata, si riprova in un futuro a precisare la tempistica.

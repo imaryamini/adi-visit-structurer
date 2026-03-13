@@ -1,0 +1,27 @@
+**Diario Clinico - ADI-0015**
+
+**Data e ora:** 10/03/2026 ore 12:40
+
+**Paziente:**
+
+* **Età:** non disponibile
+* **Sesso:** maschio
+
+**Motivo della visita:** medicazione/controllo lesione
+
+**Vitali:**
+
+* Pressione sistolica: 130 mmHg
+* Pressione diastolica: 80 mmHg
+* Frequenza cardiaca: 78 bpm
+* Temperatura corporea: 37,1°C
+* SpO2: 96%
+
+**Interventi:**
+
+* Medicazione
+* Valutazione generale
+
+**Prossimo controllo:**
+- Tipo di controllo: controllo ferita
+- Data prevista per il prossimo controllo: non specificata (da fissare entro 2 giorni)

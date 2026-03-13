@@ -1,0 +1,10 @@
+**DIARIO CLINICO**
+
+**DATA E ORA:** 13/03/2026 ore 12:40
+
+* **Patiente**: Uomo
+* **Motivo visita**: Riferiti sintomi generali
+* **Parametri vitali**: Nessuno riportato
+* **Interventi effettuati**: Valutazione generale, Educazione alimentare
+* **Problemi identificati**: Nausea, Inappetenza
+* **Rischi identificati**: Rischio malnutrizione

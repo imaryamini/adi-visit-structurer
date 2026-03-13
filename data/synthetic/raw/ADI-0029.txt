@@ -1,0 +1,15 @@
+**DIARIO CLINICO - ADI-0029**
+
+**DATA E ORA: 11/02/2026 - 08:20**
+
+* **Motivo della visita:** controllo terapia/somministrazione farmaco
+* **Vitali:**
+	+ Pressione arteriosa sistolica: 130 mmHg
+	+ Pressione arteriosa diastolica: 90 mmHg
+	+ Frequenza cardiaca: 98 bpm
+	+ Temperatura corporea: 36,7°C
+* **Interventi terapeutici:**
+	1. Somministrazione farmaco
+	2. Educazione terapeutica
+* **Problemi normalizzati:** febbre
+* **Seguente visita:** controllo, in data imprecisata, necessario un follow-up generico

@@ -1,0 +1,23 @@
+**DIARIO CLINICO**
+================
+
+**Data e ora:** 11/02/2026 14:20
+
+**Paziente:**
+
+* Nome/Id paziente: SYNTH-ADI-0043
+* Età: 81 anni
+* Sesso: Maschio
+
+**Visita di controllo parametri**
+
+* Pressione arteriosa sistolica: 110 mmHg
+* Pressione arteriosa diastolica: 80 mmHg
+* Frequenza cardiaca: 60 battiti/minuto
+* Temperatura corporea: 36,2 °C
+
+**Interventi:**
+Monitoraggio parametri vitali
+
+**Prossimo controllo:**
+ Controllo in 7 giorni

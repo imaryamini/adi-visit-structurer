@@ -1,0 +1,47 @@
+{
+  "meta": {
+    "record_id": "ADI-0044",
+    "template_type": [
+      "diario_clinico"
+    ],
+    "visit_datetime": null,
+    "operator_role": "infermiere",
+    "extraction_mode": "hybrid",
+    "llm_model": "llama3.1:8b",
+    "pipeline_version": "0.3.0",
+    "generated_at": "2026-03-13T16:38:42"
+  },
+  "patient": {
+    "patient_id": "SYNTH-ADI-0044",
+    "age": null,
+    "sex": null
+  },
+  "clinical": {
+    "reason_for_visit": "medicazione/controllo lesione",
+    "anamnesis_brief": [],
+    "vitals": {
+      "blood_pressure_systolic": null,
+      "blood_pressure_diastolic": null,
+      "heart_rate": 65,
+      "temperature": 37.8,
+      "spo2": null
+    },
+    "consciousness": null,
+    "mobility": null,
+    "interventions": [
+      "monitoraggio_parametri_vitali",
+      "medicazione",
+      "valutazione_generale"
+    ],
+    "critical_issues": [],
+    "follow_up": null
+  },
+  "coding": {
+    "problems_normalized": [],
+    "problems_suspects": []
+  },
+  "quality": {
+    "missing_mandatory_fields": [],
+    "warnings": []
+  }
+}

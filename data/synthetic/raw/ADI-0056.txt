@@ -1,0 +1,29 @@
+**Dettatura clinica**
+
+Data: 24/02/2026
+Ora: 09:00
+
+**Anamnesi**
+
+* Paziente: maschio, non indicata l'età
+* Motivo visita: rivalutazione caduta recente
+
+**Temi di intervento**
+
+* Monitoraggio parametri vitali (PA)
+* Valutazione generale (FC)
+
+**Parametri vitali**
+10/02/2026 09:00
+- Pressione arteriosa sistolica: 110 mmHg
+- Pressione arteriosa diastolica: 90 mmHg
+- Frequenza cardiaca: 78 bpm
+- Temperatura corporea: 37,8°C
+- SpO2: 96%
+
+**Issue critiche**
+
+* Caduta recente
+
+**Prossimo follow-up**
+Sarà necessario pianificare un controllo senza specificazione di giorni

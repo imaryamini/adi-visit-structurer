@@ -1,0 +1,15 @@
+**DIARIO CLINICO - ADI-0058**
+
+**Data e ora:** 15/03/2026 ore 09:50
+
+**Rapporto visita clinica**
+
+La signora **SYNTH-ADI-0058**, 88 anni, femmina:
+
+*   Controllo parametri vitali:
+    *   Pressione sistolica: 130 mmHg
+    *   Pressione diastolica: 80 mmHg
+    *   Frequenza cardiaca: 98 bpm
+    *   Temperatura corporea: 36,5°C
+*   Interventi eseguiti:
+    *   Monitoraggio dei parametri vitali

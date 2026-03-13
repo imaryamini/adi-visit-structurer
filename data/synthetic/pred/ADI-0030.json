@@ -1,0 +1,50 @@
+{
+  "meta": {
+    "record_id": "ADI-0030",
+    "template_type": [
+      "diario_clinico"
+    ],
+    "visit_datetime": null,
+    "operator_role": "infermiere",
+    "extraction_mode": "hybrid",
+    "llm_model": "llama3.1:8b",
+    "pipeline_version": "0.3.0",
+    "generated_at": "2026-03-13T16:33:41"
+  },
+  "patient": {
+    "patient_id": "SYNTH-ADI-0030",
+    "age": null,
+    "sex": null
+  },
+  "clinical": {
+    "reason_for_visit": null,
+    "anamnesis_brief": [],
+    "vitals": {
+      "blood_pressure_systolic": null,
+      "blood_pressure_diastolic": null,
+      "heart_rate": null,
+      "temperature": null,
+      "spo2": null
+    },
+    "consciousness": null,
+    "mobility": null,
+    "interventions": [
+      "valutazione_generale"
+    ],
+    "critical_issues": [],
+    "follow_up": "ricovero senza tempistica"
+  },
+  "coding": {
+    "problems_normalized": [],
+    "problems_suspects": [
+      "Astenia",
+      "Nausea"
+    ]
+  },
+  "quality": {
+    "missing_mandatory_fields": [],
+    "warnings": [
+      "No vital signs recorded in note"
+    ]
+  }
+}

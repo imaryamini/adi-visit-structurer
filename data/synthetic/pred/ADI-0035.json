@@ -1,0 +1,49 @@
+{
+  "meta": {
+    "record_id": "ADI-0035",
+    "template_type": [
+      "diario_clinico"
+    ],
+    "visit_datetime": null,
+    "operator_role": "infermiere",
+    "extraction_mode": "hybrid",
+    "llm_model": "llama3.1:8b",
+    "pipeline_version": "0.3.0",
+    "generated_at": "2026-03-13T16:35:49"
+  },
+  "patient": {
+    "patient_id": "SYNTH-ADI-0035",
+    "age": null,
+    "sex": null
+  },
+  "clinical": {
+    "reason_for_visit": "rivalutazione caduta recente",
+    "anamnesis_brief": [],
+    "vitals": {
+      "blood_pressure_systolic": null,
+      "blood_pressure_diastolic": null,
+      "heart_rate": 65,
+      "temperature": 36.2,
+      "spo2": 98
+    },
+    "consciousness": null,
+    "mobility": null,
+    "interventions": [
+      "monitoraggio_parametri_vitali"
+    ],
+    "critical_issues": [],
+    "follow_up": null
+  },
+  "coding": {
+    "problems_normalized": [
+      "caduta"
+    ],
+    "problems_suspects": [
+      "Caduta recente"
+    ]
+  },
+  "quality": {
+    "missing_mandatory_fields": [],
+    "warnings": []
+  }
+}

@@ -1,0 +1,30 @@
+**Record clinico**
+
+**Data e ora:** 11/03/2026 15:30
+
+**Paziente:**
+
+- Nome e cognome non disponibile
+- Età: 67 anni
+- Sesso: Maschio
+
+**Anamnesi brevi:** Nessuna annotazione disponibile
+
+**Parametri vitali:**
+
+- Pressione arteriosa sistolica: 110 mmHg
+- Pressione arteriosa diastolica: 80 mmHg
+- Frequenza cardiaca: 60 pulsazioni al minuto
+- Temperatura corporea: 37,8°C
+- SpO2: 97%
+
+**Interventi:**
+
+- Monitoraggio dei parametri vitali
+
+**Segnalazioni critiche:** Nessuna annotazione disponibile
+
+**Follow-up:**
+
+- Tipo di follow-up: controllo
+- Data prevista per il prossimo controllo: non disponibile (si prevede un follow-up generico entro 7 giorni)

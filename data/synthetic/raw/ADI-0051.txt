@@ -1,0 +1,28 @@
+**DIARIO CLINICO - ADI-0051**
+
+**DATA**: 13/02/2026 **ORA**: 09:50
+
+**DATI PATIENTE**
+- Età: 77 anni
+- Sesso: Maschio
+
+**ANAMNESI BRIEF**
+- Nessuna annotazione presente
+
+**VALUTAZIONE VITALI**
+- Pressione arteriosa sistolica: 130 mmHg
+- Pressione arteriosa diastolica: 70 mmHg
+- Frequenza cardiaca: 78 battiti/minuto
+- Temperatura corporea: 36.5 °C
+- SpO2: 97%
+
+**INTERVENTI**
+- Medicazione
+- Valutazione generale
+
+**ISSUE CRITICA**
+- Nessuna annotazione presente
+
+**Seguimento medico**
+- Tipo: Controllo ferita
+- Periodicità: controllo in due giorni

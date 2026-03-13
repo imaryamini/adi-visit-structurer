@@ -1,0 +1,16 @@
+**DIARIO CLINICO - ADI-0026**
+
+gg/mm/aaaa ore hh:mm: 19/02/2026 09:50
+
+**DATI PATIENTE**
+- Età: 75 anni
+- Sesso: F
+
+**PARAMETRI VITALI**
+- Pressione arteriosa sistolica: 120 mmHg
+- Pressione arteriosa diastolica: 70 mmHg
+- Frequenza cardiaca: 65 bpm
+- Temperatura corporea: 37,8°C
+
+**INTERVENTI E MONITORAGGIO**
+- Monitoraggio dei parametri vitali

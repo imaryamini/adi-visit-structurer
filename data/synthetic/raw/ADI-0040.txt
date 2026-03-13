@@ -1,0 +1,17 @@
+**Diario clinico - Visita del 14/02/2026 ore 18:10**
+
+- **Ragione per la visita**: controllo terapia/somministrazione farmaco
+- **Anamnesi sintetica**: 
+- **Parametri vitali**:
+  - Pressione arteriosa sistolica: 110 mmHg
+  - Pressione arteriosa diastolica: 80 mmHg
+  - Frequenza cardiaca: 98 bpm
+  - Temperatura corporea: 36,7 °C
+- **Interventi eseguiti**:
+  - Somministrazione farmaco
+  - Educazione terapeutica
+- **Problemi principali**:
+  - Dolore
+- **Seguimento**:
+  - Tipo di controllo: 
+  - Data del prossimo controllo: domani

@@ -1,0 +1,20 @@
+**DIARIO CLINICO**
+
+**Visitazione del:** 01/03/2026 - 09:30
+
+**Paziente:** SYNTH-ADI-0062, F, 65 anni
+
+**Motivo visita:** controllo terapia/somministrazione farmaco
+
+**Presenze vitali:**
+- Pressione arteriosa sistolica: 150 mmHg
+- Pressione arteriosa diastolica: 90 mmHg
+- Frequenza cardiaca: 72 bpm
+- Temperatura corporea: 37.1°C
+- SpO2: 97%
+
+**Somministrazioni farmacologiche:** somministrazione_farmaco
+
+**Interventi terapeutici:** educazione_terapeutica
+
+**Prossimo controllo programmato per il:** 3 giorni

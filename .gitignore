@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Mac
+.DS_Store
+
+# Environment
+.env
+.venv
+
+# Python testing
+.pytest_cache/
+
+# Jupyter
+.ipynb_checkpoints
+
+# System files
+*.log
+
+# Zip files
+*.zip

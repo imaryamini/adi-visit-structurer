@@ -1,0 +1,24 @@
+**Record Clinico**
+================
+
+**Data e Ora:** 14/03/2026 - 11:50
+
+**Paziente:**
+- Nome/Soprannome: (non presente)
+- Sesso: Maschio
+- Età: 81 anni
+
+**Visti Clinici:**
+
+- **Motivo della visita**: Controllo terapia/somministrazione farmaco.
+- **Pressione Sistolica:** 120 mmHg
+- **Pressione Diastolica:** 90 mmHg
+- **Frequenza Cardiaca:** 65 bpm
+- **Temperatura Corporale:** 37,1°C
+
+**Somministrazioni:**
+- Somministrazione di farmaco
+- Educazione terapeutica
+
+**Prossimo Controllo:**
+Controllo - (non specificato giorni)

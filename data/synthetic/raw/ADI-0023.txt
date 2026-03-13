@@ -1,0 +1,20 @@
+**RIASSUNTO DELLA VISITA CLINICA**
+
+* **Data e ora:** 20/02/2026 ore 09:20
+* **ID del paziente:** SYNTH-ADI-0023 (anziano)
+* **Motivo della visita:** riferiti sintomi generali
+* **Valutazione generale:** Valutata la situazione generale del paziente.
+* **Educazione alimentare:** Eseguita un'educazione sulle abitudini alimentari per evitare il rischio di malnutrizione.
+
+**PROBLEMI NORMALIZZATI:**
+
+* Astenia
+* Inappetenza
+
+**RISCHIO DI MALNUTRIZIONE:** Sì, rischio di malnutrizione
+
+**RIASSUNTO DELLE VITALI:**
+ Nessun parametro vitale riportato.
+
+**PROSSIMO CONTATTO:**
+Follow-up per un contatto telefonico con il caregiver senza tempistica specificata.

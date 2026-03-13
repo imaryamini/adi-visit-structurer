@@ -1,0 +1,27 @@
+**Record Clinico - ADI-0024**
+
+**Data e ora:** 05/03/2026 ore 17:00
+
+**Paziente:**
+
+* Età: non specificata
+* Sesso: maschio
+
+**Clinica:**
+
+* Motivo visita: riferiti sintomi generali
+* Anamnesi: assente
+* Parametri vitali:
+	+ Pressione arteriosa sistolica e diastolica: non misurati
+	+ Frequenza cardiaca: non misurata
+	+ Temperatura: non misurata
+* Interventi eseguiti:
+	+ Valutazione generale
+	+ Educazione terapeutica
+* Problemi normalizzati:
+	+ Insonnia
+	+ Inappetenza
+* Rischi:
+	+ Rischio di malnutrizione
+
+**Nota:** il paziente dovrà essere riconvocato con tempistica per un controllo più approfondito e per la misurazione dei parametri vitali.

@@ -1,0 +1,28 @@
+**Record clinico ADI-0053**
+
+**Data e ora:** 12/03/2026 - 12:40
+
+**Dati anagrafici del paziente:**
+Sesso: sconosciuto
+Età: sconosciuta
+
+**Motivo della visita:** Medicazione/controllo lesione
+
+**Valori vitali:**
+
+* Pressione arteriosa sistolica: 110 mmHg
+* Pressione arteriosa diastolica: 70 mmHg
+* Frequenza cardiaca: 72 bpm
+* Temperatura corporea: 36,2°C
+* SpO2: 97%
+
+**Interventi eseguiti:**
+
+* Medicazione
+* Valutazione generale
+
+**Problemi e rischi identificati:**
+Dolore
+
+**Follow-up:**
+Controllo ferita in 2 giorni.

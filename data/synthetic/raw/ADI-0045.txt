@@ -1,0 +1,30 @@
+**DIARIO CLINICO**
+
+**ID del paziente:** SYNTH-ADI-0045
+**Data e ora visita:** 13/03/2026 ore 13:00
+**Operatore:** Infermiere ADI
+
+**ANAMNESI BRIEVE**
+
+Nessun sintomo riportato dal paziente.
+
+**VALUTAZIONE GENERALE**
+
+* Pressione arteriosa sistolica: 110 mmHg
+* Pressione arteriosa diastolica: 85 mmHg
+* Frequenza cardiaca: 60 bpm
+* Temperatura corporea: 36,2°C
+* SpO2: 98%
+
+**INTERVENTI**
+
+* Medicazione per controllo della lesione
+* Valutazione generale
+
+**PROBLEMI NORMALIZZATI**
+
+* Dolori
+
+**SEGUIMENTO**
+
+Prossimo follow-up in 2 giorni con visita di controllo della lesione.

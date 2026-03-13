@@ -1,0 +1,21 @@
+**Diario Clinico - Visita del 11/03/2026 ore 11:50**
+
+* **Ragazza per la visita:** controlli terapia/somministrazioni farmaci
+* **Dati Anamnestici:**
+	+ Età: 68 anni
+	+ Sesso: F
+* **Temi di Vita Principali:**
+	+ Controllo terapia (somministrazione farmaco)
+	+ Educazione terapeutica
+* **Valori Vitali:**
+	+ Pressione arteriosa sistolica: 120 mmHg
+	+ Pressione arteriosa diastolica: 80 mmHg
+	+ Frequenza cardiaca: 98 bpm
+	+ Temperatura corporea: 37.1°C
+	+ SpO2: 99%
+* **Problemi Normalizzati:** febbre
+* **Rischi Segnalati:** Nessuno
+* **Farmaco menzionato senza dose** - Attenzione!
+* **Follow-up:**
+	+ Tipo: controllo terapia/somministrazione farmaco
+	+ Termine: entro 7 giorni

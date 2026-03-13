@@ -1,0 +1,29 @@
+**Diario Clinico - Adi 0030**
+
+Data: 24/02/2026 Ora: 15:10
+
+**Dati Anamnestici**
+
+- Sesso: Femmina
+- Età: non disponibile
+
+**Motivazione della visita**
+Riferiti sintomi generali
+
+**Valutazioni Vitali**
+
+ Nessun parametro vitale riportato.
+
+**Interventi e Terapie**
+
+- Valutazione generale
+- Educazione terapeutica
+
+**Problemi Clinici**
+
+- Nausea
+- Astenia
+
+**Seguimento**
+
+Ricovero senza tempistica

@@ -1,0 +1,28 @@
+**DIARIO CLINICO**
+
+12/02/2026 ore 09:40
+
+**DATI DEL PATIENTE**
+Non disponibile
+
+**VITALI**
+
+* Tensione arteriosa sistolica: 150 mmHg
+* Tensione arteriosa diastolica: 80 mmHg
+* Frequenza cardiaca: 98 bpm
+* Temperatura corporea: 36,7 °C
+* SpO2: 99%
+
+**INTERVENTI**
+- Medicazione
+- Valutazione generale
+
+**RESONI PER LA VISITA**
+Medicazione/controllo lesione
+
+**PUNTTI DI FORTEZZA E DEBOLEZZA**
+
+ Nessun punto di forza/ debolezza presente nel record.
+
+**PROSSIMO CONTROLLLO**
+Prossimo controllo per controllo ferita, in 3 gg.

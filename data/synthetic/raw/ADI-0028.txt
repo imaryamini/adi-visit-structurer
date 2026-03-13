@@ -1,0 +1,33 @@
+Ecco la dettatura basata sul record JSON:
+
+**Diario Clinico - ADI-0028**
+
+**Data e Ora**: 24/02/2026, ore 16:40
+
+**Paziente**: 
+- Nome non specificato
+- Età: 89 anni
+- Sesso: Maschio
+
+**Anamnesi Breve**: Nessuna annotazione presente nel file
+
+**Misure Vitali**:
+
+* Tensione arteriosa sistolica: 120 mmHg
+* Tensione arteriosa diastolica: 80 mmHg
+* Frequenza cardiaca: 78 bpm
+* Temperatura corporea: 36,5°C
+* SpO2: 97%
+
+**Interventi**: 
+- Somministrazione farmaco
+- Educazione terapeutica
+
+**Problematiche Presenti**:
+- Dispnea
+
+**Controllo di Seguito**:
+- Tipo: Controllo generico
+- Data e Ora del prossimo controllo non specificata (si riferisce a un controllo in 7 giorni)
+
+Nota: la dettatura è stata redatta con stile professionale, rispettando le regole indicate. I dati presenti nel JSON sono stati utilizzati per riempire i campi necessari senza aggiungere informazioni non presenti.

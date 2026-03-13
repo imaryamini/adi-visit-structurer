@@ -1,0 +1,33 @@
+**Diario Clinico - RIASSUNTO**
+
+**Data e Ora:** 16/02/2026 ore 11:50
+
+**Patienti:**
+- **Nome:** non presente
+- **Cognome:** non presente
+- **età:** 80 anni
+- **Sesso:** M
+
+**Motivo Visita:** rivalutazione caduta recente
+
+**Anamnesi Breve:** Nessun dato disponibile
+
+**Parametri Vitali:**
+
+- Pressione Sistolica: 140 mmHg
+- Pressione Diastolica: 90 mmHg
+- Frequenza Cardiaca: 78 bpm
+- Temperatura: 36.2°C
+- SpO2: 97%
+
+**Interventi:**
+- Monitoraggio parametri vitali
+- Valutazione generale
+
+**Critici:**
+- Caduta recente
+
+**Prossimo Controllo:** 
+- Nessuna tempistica specifica indicata, quindi si procederà con un follow-up di routine.
+
+Nota: Il seguente record contiene una "warning" relativa alla mancanza di temporizzazione per il prossimo controllo.

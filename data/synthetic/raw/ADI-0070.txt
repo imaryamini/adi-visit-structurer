@@ -1,0 +1,18 @@
+**ADI-0070 - Diario Clinico**
+
+**Data e Ora**: 25/02/2026 12:30
+
+**Motivo della visita**: Medicazione e controllo lesione.
+
+**Dati Vitali**:
+• Pressione Sistolica: 120 mmHg
+• Pressione Diastolica: 70 mmHg
+• Frequenza Cardiaca: 65 bpm
+• Temperatura: 37,8°C
+• SpO2: 99%
+
+**Interventi eseguiti**: 
+- Medicazione
+- Valutazione generale
+
+**Pianificazione follow-up**: Controllo ferita in 3 giorni.

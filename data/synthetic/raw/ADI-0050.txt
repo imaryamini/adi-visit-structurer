@@ -1,0 +1,13 @@
+**DIARIO CLINICO**
+
+* **Data e ora:** 03/03/2026 ore 11:50
+* **Rapporto visita:** Controllo terapia/somministrazione farmaco
+* **Vitali:**
+ + Pressione sistolica: 110 mmHg
+ + Pressione diastolica: 80 mmHg
+ + Frequenza cardiaca: 60 battiti/minuto
+ + Temperatura corporea: 36.2°C
+
+**Nota:** La paziente non ha ricevuto interventi specifici per la somministrazione del farmaco o l'educazione terapeutica.
+
+**Prossimo controllo:** Controllo in 7 giorni.

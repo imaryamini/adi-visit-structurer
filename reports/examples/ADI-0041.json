@@ -1,0 +1,46 @@
+{
+  "meta": {
+    "record_id": "ADI-0041",
+    "template_type": [
+      "diario_clinico"
+    ],
+    "visit_datetime": null,
+    "operator_role": "infermiere",
+    "extraction_mode": "hybrid",
+    "llm_model": "llama3.1:8b",
+    "pipeline_version": "0.2.0"
+  },
+  "patient": {
+    "patient_id": "SYNTH-ADI-0041",
+    "age": null,
+    "sex": null
+  },
+  "clinical": {
+    "reason_for_visit": null,
+    "anamnesis_brief": [],
+    "vitals": {
+      "blood_pressure_systolic": null,
+      "blood_pressure_diastolic": null,
+      "heart_rate": 98,
+      "temperature": 37.1,
+      "spo2": 99
+    },
+    "consciousness": null,
+    "mobility": null,
+    "interventions": [
+      "controllo_parametri_vitali"
+    ],
+    "critical_issues": [],
+    "follow_up": "controllo terapia/somministrazione farmaco"
+  },
+  "coding": {
+    "problems_normalized": [],
+    "problems_suspects": [
+      "febbre"
+    ]
+  },
+  "quality": {
+    "missing_mandatory_fields": [],
+    "warnings": []
+  }
+}

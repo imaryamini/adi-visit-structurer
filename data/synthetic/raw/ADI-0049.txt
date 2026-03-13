@@ -1,0 +1,19 @@
+**DIARIO CLINICO - SYNTH-ADI-0049**
+
+**DATA E ORA**: 16/02/2026 18:50
+
+**DATI PATIENTE**
+- Età: 78 anni
+- Sesso: Maschio
+
+**CONTROLLI**
+- Pressione arteriosa sistolica: 140 mmHg
+- Pressione arteriosa diastolica: 85 mmHg
+- Frequenza cardiaca: 98 bpm
+- Temperatura corporea: 36,5°C
+
+**INTERVENTI**
+- Monitoraggio dei parametri vitali
+
+**CONSEGUENZE E FOLLOW-UP**
+- Follow-up per controllo in 3 gg.
