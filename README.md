@@ -1,5 +1,9 @@
 # ADI Visit Structurer
 
+![Python](https://img.shields.io/badge/Python-3.10-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+![NLP](https://img.shields.io/badge/NLP-clinical--pipeline-orange)
+
 A hybrid NLP pipeline for structuring home-care clinical visit notes into standardized JSON records.
 
 This project was developed as part of an internship focused on building automated tools for processing and evaluating structured medical data extracted from narrative clinical notes.
@@ -26,26 +30,26 @@ The system combines **rule-based extraction** with **LLM-assisted extraction**.
 
 The pipeline processes each visit note through several stages:
 
-1. **Preprocessing**
-   - text normalization
-   - cleaning and segmentation
+### 1. Preprocessing
+- text normalization
+- cleaning and segmentation
 
-2. **Rule-based extraction**
-   - vital signs
-   - interventions
-   - reasons for visit
+### 2. Rule-based extraction
+- vital signs
+- interventions
+- reasons for visit
 
-3. **LLM extraction (hybrid mode)**
-   - local LLM inference using **Llama 3 via Ollama**
+### 3. LLM extraction (Hybrid Mode)
+- local LLM inference using **Llama 3 via Ollama**
 
-4. **Problem normalization**
-   - mapping extracted conditions to normalized labels
+### 4. Problem normalization
+- mapping extracted conditions to normalized labels
 
-5. **Schema validation**
-   - outputs validated against a JSON schema
+### 5. Schema validation
+- outputs validated against a JSON schema
 
-6. **Evaluation**
-   - predictions compared with gold annotations
+### 6. Evaluation
+- predictions compared with gold annotations
 
 ---
 
@@ -71,7 +75,7 @@ Each visit note is converted into structured JSON:
     "problems_normalized": []
   }
 }
-```
+````
 
 ---
 
@@ -116,7 +120,7 @@ adi-visit-structurer
 
 Install dependencies:
 
-```
+```bash
 pip install -r requirements.txt
 ```
 
@@ -126,13 +130,13 @@ pip install -r requirements.txt
 
 Run the extraction pipeline:
 
-```
+```bash
 python -m src.run_pipeline --hybrid
 ```
 
 Evaluate predictions:
 
-```
+```bash
 python -m src.evaluate
 ```
 
@@ -144,9 +148,9 @@ Evaluation results are exported to the `reports/` folder.
 
 Key outputs include:
 
-- `metrics.json`
-- `summary_table.csv`
-- `dashboard.html`
+* `metrics.json`
+* `summary_table.csv`
+* `dashboard.html`
 
 The dashboard provides a visual summary of pipeline performance.
 
@@ -154,16 +158,19 @@ The dashboard provides a visual summary of pipeline performance.
 
 ## Technologies Used
 
-- Python
-- Rule-based NLP
-- RapidFuzz
-- JSON schema validation
-- Ollama + Llama 3 (hybrid extraction)
-- CSV reporting and dashboard generation
+* Python
+* Rule-based NLP
+* RapidFuzz
+* JSON schema validation
+* Ollama + Llama 3 (Hybrid extraction)
+* CSV reporting
+* HTML dashboard generation
 
 ---
 
 ## Author
 
-Maryam Amini  
-Internship Project – Clinical NLP Pipeline
+**Maryam Amini**
+
+Clinical NLP Pipeline – Internship Project
+University of Messina
