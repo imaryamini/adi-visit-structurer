@@ -1,8 +1,9 @@
+````markdown
 # ADI Visit Structurer
 
 A hybrid NLP pipeline for structuring home-care clinical visit notes into standardized JSON records.
 
-This project was developed as part of an internship focused on building automated tools for processing and evaluating structured medical data extracted from narrative clinical notes.
+This project was developed during an internship focused on building automated tools for processing and evaluating structured medical data extracted from narrative clinical notes.
 
 ---
 
@@ -18,7 +19,7 @@ Clinical home-care visit notes often contain unstructured information such as:
 
 This project automatically extracts and normalizes these elements into a structured format suitable for downstream analysis, reporting, and validation.
 
-The system combines **rule-based extraction** with **LLM-assisted extraction**.
+The system combines **rule-based extraction** with **LLM-assisted extraction** to improve accuracy and coverage.
 
 ---
 
@@ -26,26 +27,33 @@ The system combines **rule-based extraction** with **LLM-assisted extraction**.
 
 The pipeline processes each visit note through several stages:
 
-1. **Preprocessing**
-   - text normalization
-   - cleaning and segmentation
+### 1. Preprocessing
+- text normalization
+- cleaning and segmentation
 
-2. **Rule-based extraction**
-   - vital signs
-   - interventions
-   - reasons for visit
+### 2. Rule-based extraction
+Extract structured fields using pattern matching and domain rules:
 
-3. **LLM extraction (hybrid mode)**
-   - local LLM inference using **Llama 3 via Ollama**
+- vital signs
+- interventions
+- reasons for visit
 
-4. **Problem normalization**
-   - mapping extracted conditions to normalized labels
+### 3. LLM extraction (Hybrid Mode)
 
-5. **Schema validation**
-   - outputs validated against a JSON schema
+For more complex information, the pipeline uses a **local LLM**:
 
-6. **Evaluation**
-   - predictions compared with gold annotations
+- **Llama 3 running via Ollama**
+
+This improves extraction of nuanced clinical descriptions.
+
+### 4. Problem normalization
+Extracted conditions are mapped to normalized labels.
+
+### 5. Schema validation
+Outputs are validated using a predefined **JSON schema** to ensure structural consistency.
+
+### 6. Evaluation
+Predictions are compared with **gold annotations** to measure extraction performance.
 
 ---
 
@@ -71,7 +79,7 @@ Each visit note is converted into structured JSON:
     "problems_normalized": []
   }
 }
-```
+````
 
 ---
 
@@ -107,16 +115,15 @@ adi-visit-structurer
 │
 ├── tests
 ├── tools
-├── notebooks
 ```
 
 ---
 
 ## Installation
 
-Install dependencies:
+Install project dependencies:
 
-```
+```bash
 pip install -r requirements.txt
 ```
 
@@ -126,13 +133,13 @@ pip install -r requirements.txt
 
 Run the extraction pipeline:
 
-```
+```bash
 python -m src.run_pipeline --hybrid
 ```
 
 Evaluate predictions:
 
-```
+```bash
 python -m src.evaluate
 ```
 
@@ -144,9 +151,9 @@ Evaluation results are exported to the `reports/` folder.
 
 Key outputs include:
 
-- `metrics.json`
-- `summary_table.csv`
-- `dashboard.html`
+* `metrics.json`
+* `summary_table.csv`
+* `dashboard.html`
 
 The dashboard provides a visual summary of pipeline performance.
 
@@ -154,16 +161,22 @@ The dashboard provides a visual summary of pipeline performance.
 
 ## Technologies Used
 
-- Python
-- Rule-based NLP
-- RapidFuzz
-- JSON schema validation
-- Ollama + Llama 3 (hybrid extraction)
-- CSV reporting and dashboard generation
+* Python
+* Rule-based NLP
+* RapidFuzz
+* JSON Schema validation
+* Ollama + Llama 3 (Hybrid extraction)
+* CSV reporting
+* HTML dashboard generation
 
 ---
 
 ## Author
 
-Maryam Amini  
-Internship Project – Clinical NLP Pipeline
+**Maryam Amini**
+
+Clinical NLP Pipeline – Internship Project
+University of Messina
+
+```
+```
