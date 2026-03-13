@@ -6,7 +6,7 @@
 
 A hybrid NLP pipeline for structuring home-care clinical visit notes into standardized JSON records.
 
-This project was developed as part of an internship focused on building automated tools for processing and evaluating structured medical data extracted from narrative clinical notes.
+This project was developed during an internship focused on building automated tools for processing and evaluating structured medical data extracted from narrative clinical notes.
 
 ---
 
@@ -22,7 +22,7 @@ Clinical home-care visit notes often contain unstructured information such as:
 
 This project automatically extracts and normalizes these elements into a structured format suitable for downstream analysis, reporting, and validation.
 
-The system combines **rule-based extraction** with **LLM-assisted extraction**.
+The system combines **rule-based extraction** with **LLM-assisted extraction** to improve accuracy and coverage.
 
 ---
 
@@ -34,22 +34,22 @@ The pipeline processes each visit note through several stages:
 - text normalization
 - cleaning and segmentation
 
-### 2. Rule-based extraction
-- vital signs
-- interventions
-- reasons for visit
+2. **Rule-based extraction**
+   - vital signs
+   - interventions
+   - reasons for visit
 
-### 3. LLM extraction (Hybrid Mode)
-- local LLM inference using **Llama 3 via Ollama**
+3. **LLM extraction (hybrid mode)**
+   - local LLM inference using **Llama 3 via Ollama**
 
-### 4. Problem normalization
-- mapping extracted conditions to normalized labels
+4. **Problem normalization**
+   - mapping extracted conditions to normalized labels
 
-### 5. Schema validation
-- outputs validated against a JSON schema
+5. **Schema validation**
+   - outputs validated against a JSON schema
 
-### 6. Evaluation
-- predictions compared with gold annotations
+6. **Evaluation**
+   - predictions compared with gold annotations
 
 ---
 
@@ -111,14 +111,13 @@ adi-visit-structurer
 │
 ├── tests
 ├── tools
-├── notebooks
 ```
 
 ---
 
 ## Installation
 
-Install dependencies:
+Install project dependencies:
 
 ```bash
 pip install -r requirements.txt
@@ -158,19 +157,16 @@ The dashboard provides a visual summary of pipeline performance.
 
 ## Technologies Used
 
-* Python
-* Rule-based NLP
-* RapidFuzz
-* JSON schema validation
-* Ollama + Llama 3 (Hybrid extraction)
-* CSV reporting
-* HTML dashboard generation
+- Python
+- Rule-based NLP
+- RapidFuzz
+- JSON schema validation
+- Ollama + Llama 3 (hybrid extraction)
+- CSV reporting and dashboard generation
 
 ---
 
 ## Author
 
-**Maryam Amini**
-
-Clinical NLP Pipeline – Internship Project
-University of Messina
+Maryam Amini  
+Internship Project – Clinical NLP Pipeline
