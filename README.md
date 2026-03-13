@@ -1,4 +1,3 @@
-````markdown
 # ADI Visit Structurer
 
 A hybrid NLP pipeline for structuring home-care clinical visit notes into standardized JSON records.
@@ -177,6 +176,3 @@ The dashboard provides a visual summary of pipeline performance.
 
 Clinical NLP Pipeline – Internship Project
 University of Messina
-
-```
-```
