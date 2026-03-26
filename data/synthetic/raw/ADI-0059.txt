@@ -1,30 +1,8 @@
-**Record clinico**
+11/03/2026 ore 15:30. Eseguito controllo domiciliare per valutazione parametri vitali. La persona in visita presenta condizioni generali discrete. I dati rilevati sono:
 
-**Data e ora:** 11/03/2026 15:30
+* Tensione arteriosa: 110/80 mmHg
+* Frequenza cardiaca: 60 battiti al minuto
+* Temperatura corporea: 37,8°C
+* Saturo di ossigeno per via orale (SpO2): 97%
 
-**Paziente:**
-
-- Nome e cognome non disponibile
-- Età: 67 anni
-- Sesso: Maschio
-
-**Anamnesi brevi:** Nessuna annotazione disponibile
-
-**Parametri vitali:**
-
-- Pressione arteriosa sistolica: 110 mmHg
-- Pressione arteriosa diastolica: 80 mmHg
-- Frequenza cardiaca: 60 pulsazioni al minuto
-- Temperatura corporea: 37,8°C
-- SpO2: 97%
-
-**Interventi:**
-
-- Monitoraggio dei parametri vitali
-
-**Segnalazioni critiche:** Nessuna annotazione disponibile
-
-**Follow-up:**
-
-- Tipo di follow-up: controllo
-- Data prevista per il prossimo controllo: non disponibile (si prevede un follow-up generico entro 7 giorni)
+Effettuata rilevazione dei parametri vitali. Programmato controllo domiciliare per verificarne lo stato futuro in data 18/03/2026.

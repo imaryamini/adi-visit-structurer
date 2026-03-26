@@ -1,31 +1,3 @@
-**ADI-0017 - Diario Clinico**
+Ecco la nota clinica domiciliare in italiano:
 
-Data: 14/02/2026 Ora: 08:50
-
-**Dati Anamnestici**
-
-- Età: 87 anni
-- Sesso: Maschio
-
-**Motivazione della Visita**
-La visita si è svolta per la somministrazione di trattamenti e controllo di lesione.
-
-**Vitali**
-
-- Tensione arteriosa sistolica: 140 mmHg
-- Tensione arteriosa diastolica: 85 mmHg
-- Frequenza cardiaca: 98 bpm
-- Temperatura corporea: 37,1°C
-- SpO2: 98%
-
-**Interventi Terapeutici**
-
-- Somministrazione di trattamenti
-- Valutazione generale del paziente
-
-**Segnalazioni Critiche**
-Nessuna segnalazione critica presente.
-
-**Follow-up**
-- Tipo: controllo ferita
-- Periodicità: in 3 giorni
+14/02/2026 ore 08:50. Accesso domiciliare di controllo generale per valutazione e medicazione della lesione persistente. Il paziente riferisce ancora dolore nella zona interessata. Sono stati rilevati i seguenti parametri vitali: pressione arteriosa 140/85 mmHg, frequenza cardiaca 98 bpm, temperatura corporea 37,1°C, saturazione di ossigeno 98%. È stata eseguita la medicazione della lesione secondo indicazioni e valutata la situazione generale del paziente. Prossimo controllo previsto tra 3 giorni per rilevare l'evoluzione della lesione.

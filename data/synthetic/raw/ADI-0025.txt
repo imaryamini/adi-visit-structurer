@@ -1,7 +1,3 @@
-**04/03/2026 ore 17:20**
+04/03/2026 ore 17:20. Controllo domiciliare per la valutazione dei parametri vitali del paziente. Sono stati rilevati i seguenti dati: pressione arteriosa sistolica 140 mmHg, pressione arteriosa diastolica 90 mmHg, frequenza cardiaca 78 bpm, temperatura corporea 36,7°C. È stato eseguito il monitoraggio dei parametri vitali. Si prevede un nuovo controllo domiciliare fra 3 giorni per valutare eventuali cambiamenti delle condizioni generali del paziente.
 
-* Visita del paziente SYNTH-ADI-0025.
-* Motivo della visita: controllo parametri vitali.
-* **Pressione arteriosa:** 140/90 mmHg
-* Frequenza cardiaca: 78 bpm
-* Temperatura corporea: 36,7°C
+Nota: ho omesso la menzione della spO2 perché è presente nella nota di warning.

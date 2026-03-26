@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ADI Assistant</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="app-body">
+  <div class="dashboard">
+    <aside class="menu">
+      <div class="brand">
+        <div class="brand-badge">AI</div>
+        <div>
+          <h1>ADI Assistant</h1>
+          <p>Clinical Dictation Structurer</p>
+        </div>
+      </div>
+
+      <nav class="menu-nav">
+        <button class="menu-item active" data-view="inputView">Input</button>
+        <button class="menu-item" data-view="reportView">Report</button>
+        <button class="menu-item" data-view="jsonView">Raw JSON</button>
+      </nav>
+
+      <div class="menu-note">
+        <p class="menu-note-title">Workflow</p>
+        <p>Record or type a clinical note, then review the structured output.</p>
+      </div>
+
+      <a href="/" class="logout-link">Logout</a>
+    </aside>
+
+    <main class="content">
+      <header class="page-header">
+        <div>
+          <p class="kicker">Dashboard</p>
+          <h2>Clinical Voice-to-Report Assistant</h2>
+          <p class="subtitle">
+            Generate structured ADI visit drafts from voice recordings or typed clinical notes.
+          </p>
+        </div>
+      </header>
+
+      <section id="inputView" class="view active-view">
+        <div class="grid-two">
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <p class="small-kicker">Voice Input</p>
+                <h3>Record dictation</h3>
+              </div>
+            </div>
+
+            <p class="card-text">
+              Record a short clinical note directly in the browser.
+            </p>
+
+            <div class="button-row">
+              <button id="startBtn" type="button" class="primary-btn">Start Recording</button>
+              <button id="stopBtn" type="button" class="secondary-btn" disabled>Stop</button>
+            </div>
+
+            <div class="status-line">
+              <span class="status-dot"></span>
+              <p id="recordingStatus">Not recording</p>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <p class="small-kicker">Manual Input</p>
+                <h3>Type or paste note</h3>
+              </div>
+            </div>
+
+            <p class="card-text">
+              Paste a clinical dictation manually and structure it instantly.
+            </p>
+
+            <textarea
+              id="manualText"
+              rows="10"
+              placeholder="Example: Paziente vigile, PA 130/80, FC 78 bpm, lieve dolore lombare, eseguita medicazione e consigliata rivalutazione tra 3 giorni..."
+            ></textarea>
+
+            <button id="textBtn" type="button" class="primary-btn full-btn">
+              Generate Report
+            </button>
+          </div>
+        </div>
+
+        <div class="card transcript-card">
+          <div class="card-head">
+            <div>
+              <p class="small-kicker">Transcript</p>
+              <h3>Recognized text</h3>
+            </div>
+          </div>
+
+          <pre id="transcriptBox" class="clean-pre">No transcript yet.</pre>
+        </div>
+      </section>
+
+      <section id="reportView" class="view">
+        <div id="summaryBanner" class="summary-banner hidden"></div>
+
+        <div id="reportCards">
+          <div class="report-grid">
+            <div class="info-card span-2">
+              <span class="label">Reason for Visit</span>
+              <div class="value muted">No structured output yet.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="jsonView" class="view">
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <p class="small-kicker">Developer View</p>
+              <h3>Raw JSON</h3>
+            </div>
+          </div>
+
+          <pre id="outputBox" class="json-pre">No structured output yet.</pre>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

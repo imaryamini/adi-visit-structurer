@@ -1,7 +1,9 @@
 {
   "meta": {
     "record_id": "ADI-0013",
-    "template_type": ["diario_clinico"],
+    "template_type": [
+      "diario_clinico"
+    ],
     "visit_datetime": null,
     "operator_role": "infermiere"
   },
@@ -12,7 +14,10 @@
   },
   "clinical": {
     "reason_for_visit": "stanchezza e scarso appetito",
-    "anamnesis_brief": ["riferisce stanchezza", "riferisce scarso appetito"],
+    "anamnesis_brief": [
+      "riferisce stanchezza",
+      "riferisce scarso appetito"
+    ],
     "vitals": {
       "blood_pressure_systolic": null,
       "blood_pressure_diastolic": null,
@@ -20,16 +25,27 @@
       "temperature": null,
       "spo2": null
     },
-    "interventions": ["valutazione_generale", "consigli_alimentari"],
+    "interventions": [
+      "valutazione_generale",
+      "consigli_alimentari"
+    ],
     "critical_issues": [],
     "follow_up": "ricontatto telefonico con caregiver"
   },
   "coding": {
-    "problems_normalized": ["astenia", "inappetenza"],
-    "risk_flags": ["rischio_malnutrizione"]
+    "problems_normalized": [
+      "astenia",
+      "inappetenza"
+    ],
+    "risk_flags": [
+      "rischio_malnutrizione"
+    ]
   },
   "quality": {
     "missing_mandatory_fields": [],
-    "warnings": ["Nessun parametro vitale riportato", "Follow-up senza tempistica"]
+    "warnings": [
+      "Nessun parametro vitale riportato",
+      "Follow-up senza tempistica"
+    ]
   }
 }

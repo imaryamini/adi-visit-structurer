@@ -1,33 +1,9 @@
-**DIARIO CLINICO**
+Ecco la nota clinica domiciliare ADI riscritta in italiano:
 
-**DATA E ORA:** 16/02/2026 - 08:50
+16/02/2026 ore 08:50. Visita domiciliare di controllo generale del paziente.
 
-**UTENTE:** SYNTH-ADI-0067
+La paziente è stata osservata in buone condizioni generali. Sono stati misurati i parametri vitali, che risultano nella norma: pressione arteriosa 140/85 mmHg, frequenza cardiaca 65 bpm e temperatura corporea 36,7°C.
 
-**TERAPIA/FARMACO:**
+È stata somministrata la terapia come prescritta dai medici. Sono state fornite indicazioni terapeutiche al paziente/caregiver per assicurarsi un corretto utilizzo degli farmaci.
 
-* Controllo terapia e somministrazione farmaco.
-
-**VITALI:**
-
-* Pressione arteriosa sistolica: 140 mmHg
-* Pressione arteriosa diastolica: 85 mmHg
-* Frequenza cardiaca: 65 bpm
-* Temperatura corporea: 36,7°C
-
-**INTERVENTI:**
-
-* Somministrazione farmaco.
-* Educazione terapeutica.
-
-**PROBLEMI RILEVATI:**
-
-* Febbre.
-
-**CONSEGUENZE E PRESCRIZIONI:**
-
-Nessuna annotazione specifica presente nel file.
-
-**SEGUITO:**
-
-Follow-up in 2 giorni.
+La prossima visita di controllo è prevista tra 2 giorni.

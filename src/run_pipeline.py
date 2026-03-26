@@ -1,5 +1,3 @@
-# src/run_pipeline.py
-
 import argparse
 import json
 import re
@@ -14,7 +12,6 @@ from src.quality import quality_check
 from src.schema import coerce_llm_output
 from src.problem_evidence import has_evidence
 
-# LLM extractor (Ollama-based in src/llm_extract.py)
 try:
     from src.llm_extract import llm_extract
 except Exception:
@@ -28,8 +25,21 @@ EXAMPLES_DIR = REPORTS_DIR / "examples"
 DEBUG_LOG_PATH = REPORTS_DIR / "hybrid_debug.log"
 RUN_SUMMARY_PATH = REPORTS_DIR / "run_summary.json"
 
-PIPELINE_VERSION = "0.3.0"
+PIPELINE_VERSION = "0.4.0"
 MAX_EXAMPLE_EXPORTS = 3
+
+INTERVENTION_VOCAB = {
+    "monitoraggio_parametri_vitali",
+    "valutazione_generale",
+    "consigli_alimentari",
+    "educazione_alimentare",
+    "medicazione",
+    "somministrazione_farmaco",
+    "monitoraggio_glicemia",
+    "gestione_catetere",
+    "gestione_stomia",
+    "educazione_terapeutica",
+}
 
 
 def log_debug(message: str) -> None:
@@ -64,14 +74,11 @@ def get_preprocess_fn() -> Callable[[str], str]:
     raise ImportError(
         "Could not find a preprocess function in src/preprocess.py.\n"
         f"Tried: {candidates}\n"
-        f"Available: {available}\n"
-        "Fix: rename your preprocess function to 'preprocess_text' or add a wrapper."
+        f"Available: {available}"
     )
 
 
 PREPROCESS = get_preprocess_fn()
-
-# ---- Rule extractors (robust resolution) ----
 
 EXTRACT_REASON = _pick_callable(
     rules_mod,
@@ -85,7 +92,6 @@ EXTRACT_INTERVENTIONS = _pick_callable(
     rules_mod,
     ["extract_interventions", "extract_actions", "interventions", "get_interventions"],
 )
-
 EXTRACT_BP = _pick_callable(
     rules_mod,
     ["extract_blood_pressure", "extract_bp", "blood_pressure", "get_bp"],
@@ -102,10 +108,11 @@ EXTRACT_SPO2 = _pick_callable(
     rules_mod,
     ["extract_spo2", "extract_saturation", "spo2", "saturation", "get_spo2"],
 )
+EXTRACT_DATETIME = _pick_callable(
+    rules_mod,
+    ["extract_datetime", "get_datetime", "extract_visit_datetime"],
+)
 
-# ---------------------------
-# Robust vitals fallback regex
-# ---------------------------
 
 _BP_CONTEXT = re.compile(r"\b(pa|pressione|press\.?|bp)\b", re.IGNORECASE)
 _HR_CONTEXT = re.compile(r"\b(fc|frequenza\s*cardiaca|hr|bpm)\b", re.IGNORECASE)
@@ -122,14 +129,6 @@ def _to_float(s: str) -> Optional[float]:
 
 
 def _parse_bp_fallback(text: str) -> Tuple[Optional[int], Optional[int]]:
-    """
-    Parse BP like:
-      - 130/80
-      - 130-80
-      - PA 130/80
-      - pressione 135-80
-    Avoid dates by requiring plausible BP ranges.
-    """
     candidates = []
     for m in re.finditer(r"(\d{2,3})\s*[/\-]\s*(\d{2,3})", text):
         s1 = int(m.group(1))
@@ -165,7 +164,6 @@ def _parse_hr_fallback(text: str) -> Optional[int]:
                 window = text[start:end]
                 score = 2 if _HR_CONTEXT.search(window) else 1
                 candidates.append((score, val))
-
     if not candidates:
         return None
     candidates.sort(key=lambda x: (-x[0], x[1]))
@@ -189,7 +187,6 @@ def _parse_temp_fallback(text: str) -> Optional[float]:
                 window = text[start:end]
                 score = 2 if _TEMP_CONTEXT.search(window) else 1
                 candidates.append((score, val))
-
     if not candidates:
         return None
     candidates.sort(key=lambda x: (-x[0], x[1]))
@@ -212,7 +209,6 @@ def _parse_spo2_fallback(text: str) -> Optional[int]:
                 window = text[start:end]
                 score = 2 if _SPO2_CONTEXT.search(window) else 1
                 candidates.append((score, val))
-
     if not candidates:
         return None
     candidates.sort(key=lambda x: (-x[0], x[1]))
@@ -228,7 +224,6 @@ def extract_vitals_wrapper(text: str) -> Dict[str, Any]:
         "spo2": None,
     }
 
-    # Rules first
     if EXTRACT_BP:
         bp = EXTRACT_BP(text)
         if isinstance(bp, dict):
@@ -247,14 +242,11 @@ def extract_vitals_wrapper(text: str) -> Dict[str, Any]:
     if EXTRACT_SPO2:
         vitals["spo2"] = EXTRACT_SPO2(text)
 
-    # Fallbacks if needed
-    sys_missing = vitals["blood_pressure_systolic"] is None
-    dia_missing = vitals["blood_pressure_diastolic"] is None
-    if sys_missing or dia_missing:
+    if vitals["blood_pressure_systolic"] is None or vitals["blood_pressure_diastolic"] is None:
         sys_val, dia_val = _parse_bp_fallback(text)
-        if sys_missing:
+        if vitals["blood_pressure_systolic"] is None:
             vitals["blood_pressure_systolic"] = sys_val
-        if dia_missing:
+        if vitals["blood_pressure_diastolic"] is None:
             vitals["blood_pressure_diastolic"] = dia_val
 
     if vitals["heart_rate"] is None:
@@ -306,28 +298,159 @@ def build_base_record(record_id: str, mode: str, model: str) -> Dict[str, Any]:
     }
 
 
+def _normalize_reason(reason: Optional[str]) -> Optional[str]:
+    if not reason:
+        return None
+    r = str(reason).strip().lower()
+    r = r.replace("+", " e ")
+    r = re.sub(r"\s+", " ", r).strip()
+
+    replacements = {
+        "monitoraggio segni vitali": "controllo parametri",
+        "monitoraggio parametri vitali": "controllo parametri",
+        "controllo parametri vitali": "controllo parametri",
+        "controllo e medicazione lesione": "medicazione e controllo lesione",
+        "controllo lesione": "medicazione e controllo lesione",
+        "controllo ferita": "medicazione e controllo lesione",
+        "medicazione ferita": "medicazione e controllo lesione",
+        "medicazione lesione": "medicazione e controllo lesione",
+        "rivalutazione del dolore": "rivalutazione dolore",
+        "controllo terapia": "controllo terapia e somministrazione farmaco",
+        "somministrazione terapia": "controllo terapia e somministrazione farmaco",
+    }
+    return replacements.get(r, r)
+
+
+def _normalize_interventions(interventions: list[str], text: str, reason: Optional[str], vitals: dict) -> list[str]:
+    t = (text or "").lower()
+    r = (reason or "").lower()
+    out: list[str] = []
+
+    synonym_map = {
+        "controllo_parametri_vitali": "monitoraggio_parametri_vitali",
+        "monitoraggio_parametri_vitali": "monitoraggio_parametri_vitali",
+        "valutazione": "valutazione_generale",
+        "controllo generale": "valutazione_generale",
+        "valutazione generale": "valutazione_generale",
+        "somministrato farmaco": "somministrazione_farmaco",
+        "somministrazione farmaco": "somministrazione_farmaco",
+        "terapia": "educazione_terapeutica",
+        "catetere": "gestione_catetere",
+        "stomia": "gestione_stomia",
+        "glicemia": "monitoraggio_glicemia",
+    }
+
+    for item in interventions or []:
+        low = str(item).strip().lower()
+        mapped = synonym_map.get(low, low)
+        if mapped in INTERVENTION_VOCAB:
+            out.append(mapped)
+
+    has_any_vital = any(vitals.get(k) is not None for k in [
+        "blood_pressure_systolic",
+        "blood_pressure_diastolic",
+        "heart_rate",
+        "temperature",
+        "spo2",
+    ])
+    if has_any_vital:
+        out.append("monitoraggio_parametri_vitali")
+
+    if any(k in t for k in ["medicazione", "ferita", "lesione", "piaga", "ulcera", "decubito"]) or "lesione" in r:
+        out.append("medicazione")
+
+    if any(k in t for k in ["farmaco", "somministrazione", "somministrato"]) or "farmaco" in r or "terapia" in r:
+        out.append("somministrazione_farmaco")
+
+    if any(k in t for k in ["terapia", "aderenza terapeutica", "caregiver", "istruito", "educazione"]) and "somministrazione_farmaco" not in out:
+        out.append("educazione_terapeutica")
+
+    if "catetere" in t or "catetere" in r:
+        out.append("gestione_catetere")
+
+    if "stomia" in t or "stomia" in r:
+        out.append("gestione_stomia")
+
+    if "glicemia" in t:
+        out.append("monitoraggio_glicemia")
+
+    if not out:
+        out.append("valutazione_generale")
+
+    out = list(dict.fromkeys(out))
+    return [x for x in out if x in INTERVENTION_VOCAB]
+
+
+def _infer_critical_issues(text: str) -> list[str]:
+    t = (text or "").lower()
+    issues = []
+    if any(k in t for k in ["caduta recente", "post-caduta", "post caduta"]):
+        issues.append("caduta_recente")
+    if any(k in t for k in ["dispnea importante", "desaturazione", "spo2 88", "spo2 89", "spo2 90"]):
+        issues.append("instabilita_respiratoria")
+    return issues
+
+
 def apply_rules(text: str, rec: Dict[str, Any]) -> None:
-    if EXTRACT_REASON:
-        rec["clinical"]["reason_for_visit"] = EXTRACT_REASON(text)
-    if EXTRACT_FOLLOW_UP:
-        rec["clinical"]["follow_up"] = EXTRACT_FOLLOW_UP(text)
+    vitals = extract_vitals_wrapper(text)
+
+    reason = EXTRACT_REASON(text) if EXTRACT_REASON else None
+    follow_up = EXTRACT_FOLLOW_UP(text) if EXTRACT_FOLLOW_UP else None
+
+    interventions = []
     if EXTRACT_INTERVENTIONS:
-        rec["clinical"]["interventions"] = EXTRACT_INTERVENTIONS(text) or []
-    rec["clinical"]["vitals"] = extract_vitals_wrapper(text)
+        try:
+            interventions = EXTRACT_INTERVENTIONS(text, vitals=vitals, reason=reason) or []
+        except TypeError:
+            interventions = EXTRACT_INTERVENTIONS(text) or []
+
+    rec["meta"]["visit_datetime"] = EXTRACT_DATETIME(text) if EXTRACT_DATETIME else None
+    rec["clinical"]["reason_for_visit"] = _normalize_reason(reason)
+    rec["clinical"]["follow_up"] = follow_up
+    rec["clinical"]["vitals"] = vitals
+    rec["clinical"]["interventions"] = _normalize_interventions(
+        interventions=interventions,
+        text=text,
+        reason=rec["clinical"]["reason_for_visit"],
+        vitals=vitals,
+    )
+    rec["clinical"]["critical_issues"] = _infer_critical_issues(text)
     rec["coding"]["problems_normalized"] = normalize_problems(text) or []
 
 
-def apply_llm(text: str, rec: Dict[str, Any], model: str, record_id: str) -> str:
+def apply_llm(text: str, rec: Dict[str, Any], model: str) -> str:
     if llm_extract is None:
         raise RuntimeError("LLM extraction requested but src/llm_extract.py could not be imported.")
 
     out, llm_raw = llm_extract(text=text, model=model, return_raw=True)
     out = coerce_llm_output(out)
 
-    rec["clinical"]["reason_for_visit"] = out["clinical"].get("reason_for_visit")
+    rec["meta"]["visit_datetime"] = (
+        out.get("meta", {}).get("visit_datetime")
+        or (EXTRACT_DATETIME(text) if EXTRACT_DATETIME else None)
+    )
+
+    rec["clinical"]["reason_for_visit"] = _normalize_reason(out["clinical"].get("reason_for_visit"))
     rec["clinical"]["follow_up"] = out["clinical"].get("follow_up")
-    rec["clinical"]["interventions"] = out["clinical"].get("interventions", [])
-    rec["clinical"]["vitals"] = out["clinical"].get("vitals", rec["clinical"]["vitals"])
+
+    rule_vitals = extract_vitals_wrapper(text)
+    llm_vitals = out["clinical"].get("vitals", {}) or {}
+    merged_vitals = {
+        "blood_pressure_systolic": llm_vitals.get("blood_pressure_systolic") if llm_vitals.get("blood_pressure_systolic") is not None else rule_vitals.get("blood_pressure_systolic"),
+        "blood_pressure_diastolic": llm_vitals.get("blood_pressure_diastolic") if llm_vitals.get("blood_pressure_diastolic") is not None else rule_vitals.get("blood_pressure_diastolic"),
+        "heart_rate": llm_vitals.get("heart_rate") if llm_vitals.get("heart_rate") is not None else rule_vitals.get("heart_rate"),
+        "temperature": llm_vitals.get("temperature") if llm_vitals.get("temperature") is not None else rule_vitals.get("temperature"),
+        "spo2": llm_vitals.get("spo2") if llm_vitals.get("spo2") is not None else rule_vitals.get("spo2"),
+    }
+    rec["clinical"]["vitals"] = merged_vitals
+
+    rec["clinical"]["interventions"] = _normalize_interventions(
+        interventions=out["clinical"].get("interventions", []),
+        text=text,
+        reason=rec["clinical"]["reason_for_visit"],
+        vitals=merged_vitals,
+    )
+    rec["clinical"]["critical_issues"] = _infer_critical_issues(text)
 
     probs = out["coding"].get("problems_normalized", [])
     final: list[str] = []
@@ -337,183 +460,98 @@ def apply_llm(text: str, rec: Dict[str, Any], model: str, record_id: str) -> str
             final.append(p)
         else:
             suspects.append(p)
-    rec["coding"]["problems_normalized"] = sorted(set(final))
+
+    rule_probs = normalize_problems(text) or []
+    final = sorted(set(final) | set(rule_probs))
+    rec["coding"]["problems_normalized"] = final
     rec["coding"]["problems_suspects"] = sorted(set(suspects))
+
+    if rec["clinical"]["reason_for_visit"] is None and EXTRACT_REASON:
+        rec["clinical"]["reason_for_visit"] = _normalize_reason(EXTRACT_REASON(text))
+    if rec["clinical"]["follow_up"] is None and EXTRACT_FOLLOW_UP:
+        rec["clinical"]["follow_up"] = EXTRACT_FOLLOW_UP(text)
 
     return llm_raw
 
 
-def apply_hybrid(text: str, rec: Dict[str, Any], model: str, record_id: str) -> str:
+def apply_hybrid(text: str, rec: Dict[str, Any], model: str) -> str:
     if llm_extract is None:
-        raise RuntimeError("Hybrid requested but src/llm_extract.py could not be imported.")
+        apply_rules(text, rec)
+        return ""
 
     out, llm_raw = llm_extract(text=text, model=model, return_raw=True)
     out = coerce_llm_output(out)
 
-    rec["clinical"]["reason_for_visit"] = out["clinical"].get("reason_for_visit")
-    rec["clinical"]["follow_up"] = out["clinical"].get("follow_up")
-    rec["clinical"]["interventions"] = out["clinical"].get("interventions", [])
+    rule_vitals = extract_vitals_wrapper(text)
+    rule_reason = EXTRACT_REASON(text) if EXTRACT_REASON else None
+    rule_follow = EXTRACT_FOLLOW_UP(text) if EXTRACT_FOLLOW_UP else None
 
-    # Rules for vitals
-    rec["clinical"]["vitals"] = extract_vitals_wrapper(text)
+    rec["meta"]["visit_datetime"] = (
+        out.get("meta", {}).get("visit_datetime")
+        or (EXTRACT_DATETIME(text) if EXTRACT_DATETIME else None)
+    )
 
-    # Problems: rules first
-    rule_probs = normalize_problems(text) or []
-    final_set = set(rule_probs)
+    llm_reason = _normalize_reason(out["clinical"].get("reason_for_visit"))
+    rec["clinical"]["reason_for_visit"] = llm_reason or _normalize_reason(rule_reason)
 
+    rec["clinical"]["follow_up"] = out["clinical"].get("follow_up") or rule_follow
+    rec["clinical"]["vitals"] = rule_vitals
+
+    llm_interventions = out["clinical"].get("interventions", [])
+    rule_interventions = []
+    if EXTRACT_INTERVENTIONS:
+        try:
+            rule_interventions = EXTRACT_INTERVENTIONS(
+                text,
+                vitals=rule_vitals,
+                reason=rec["clinical"]["reason_for_visit"],
+            ) or []
+        except TypeError:
+            rule_interventions = EXTRACT_INTERVENTIONS(text) or []
+
+    merged_interventions = list(dict.fromkeys((llm_interventions or []) + (rule_interventions or [])))
+    rec["clinical"]["interventions"] = _normalize_interventions(
+        interventions=merged_interventions,
+        text=text,
+        reason=rec["clinical"]["reason_for_visit"],
+        vitals=rule_vitals,
+    )
+    rec["clinical"]["critical_issues"] = _infer_critical_issues(text)
+
+    rule_probs = set(normalize_problems(text) or [])
     llm_probs = out["coding"].get("problems_normalized", []) or []
     suspects: list[str] = []
     for p in llm_probs:
-        if p in final_set:
-            continue
         if has_evidence(p, text):
-            final_set.add(p)
+            rule_probs.add(p)
         else:
             suspects.append(p)
 
-    rec["coding"]["problems_normalized"] = sorted(final_set)
+    rec["coding"]["problems_normalized"] = sorted(rule_probs)
     rec["coding"]["problems_suspects"] = sorted(set(suspects))
 
     return llm_raw
 
 
-def normalize_reason(reason: Optional[str]) -> Optional[str]:
-    if not reason:
-        return None
-    r = reason.strip().lower()
-    r = r.replace("+", " e ")
-    r = re.sub(r"\s+", " ", r).strip()
-    r = re.sub(r"\bdx\b", "destro", r)
-    r = re.sub(r"\bsx\b", "sinistro", r)
-    r = re.sub(r"\bda giorni\b", "", r).strip()
-    r = re.sub(r"\s+", " ", r).strip()
-    return r
-
-
-def normalize_follow_up(fu: Optional[str]) -> Optional[str]:
-    if fu is None:
-        return None
-    s = fu.strip().lower()
-    s = re.sub(r"\s+", " ", s)
-
-    m = re.match(r"^(?:programmato controllo )?(?:tra )?(\d+)\s*giorni$", s)
-    if m:
-        n = m.group(1)
-        return f"programmato controllo tra {n} giorni"
-
-    if s in {"nuovo controllo", "programmato nuovo controllo"}:
-        return "programmato nuovo controllo"
-
-    return s
-
-
-def follow_up_to_struct(fu: Optional[str]) -> Any:
-    if fu is None:
-        return None
-    s = fu.strip().lower()
-    s = re.sub(r"\s+", " ", s)
-
-    m = re.match(r"^programmato controllo tra (\d+)\s*giorni$", s)
-    if m:
-        return {"type": "controllo", "timing_days": int(m.group(1))}
-
-    if s in {"programmato nuovo controllo", "nuovo controllo"}:
-        return {"type": "controllo", "timing_days": None}
-
-    if "ricontatto" in s and "telefon" in s and "caregiver" in s:
-        return {"type": "ricontatto_telefonico", "target": "caregiver", "timing_days": None}
-
-    if "ricontatto" in s and "telefon" in s:
-        return {"type": "ricontatto_telefonico", "target": None, "timing_days": None}
-
-    return s
-
-
-INTERVENTION_VOCAB = {
-    "monitoraggio_parametri_vitali",
-    "valutazione_generale",
-    "consigli_alimentari",
-    "educazione_alimentare",
-    "medicazione",
-    "somministrazione_farmaco",
-    "monitoraggio_glicemia",
-    "gestione_catetere",
-    "gestione_stomia",
-    "educazione_terapeutica",
-}
-
-INTERVENTION_SYNONYMS = {
-    "controllo parametri": "monitoraggio_parametri_vitali",
-    "controllo parametri vitali": "monitoraggio_parametri_vitali",
-    "rilevati parametri": "monitoraggio_parametri_vitali",
-    "rilevazione parametri": "monitoraggio_parametri_vitali",
-    "monitoraggio parametri": "monitoraggio_parametri_vitali",
-    "monitoraggio parametri vitali": "monitoraggio_parametri_vitali",
-    "controllo generale": "valutazione_generale",
-    "valutazione generale": "valutazione_generale",
-    "valutazione": "valutazione_generale",
-    "consigli alimentari": "consigli_alimentari",
-    "educazione alimentare": "educazione_alimentare",
-    "medicazione avanzata": "medicazione",
-    "medicazione lesione": "medicazione",
-    "medicazione piaga": "medicazione",
-    "cambio medicazione": "medicazione",
-    "somministrato farmaco": "somministrazione_farmaco",
-    "somministrazione farmaco": "somministrazione_farmaco",
-    "terapia": "educazione_terapeutica",
-    "catetere": "gestione_catetere",
-    "stomia": "gestione_stomia",
-    "glicemia": "monitoraggio_glicemia",
-}
-
-
-def normalize_interventions(interventions: list[str], text: str, reason: Optional[str]) -> list[str]:
-    t = (text or "").lower()
-    r = (reason or "").lower()
-    out: list[str] = []
-
-    for it in interventions or []:
-        low = str(it).strip().lower()
-        mapped = INTERVENTION_SYNONYMS.get(low, low)
-        if mapped in INTERVENTION_VOCAB:
-            out.append(mapped)
-
-    if ("medicazione" in t) or ("medicazione" in r) or ("piaga" in t) or ("lesione" in t) or ("decubito" in t):
-        out.append("medicazione")
-
-    if ("glicemia" in t) or ("diabete" in t):
-        out.append("monitoraggio_glicemia")
-
-    out = list(dict.fromkeys(out))
-    return [x for x in out if x in INTERVENTION_VOCAB]
-
-
 def postprocess_record(rec: Dict[str, Any], text: str) -> None:
-    rec["clinical"]["reason_for_visit"] = normalize_reason(rec["clinical"].get("reason_for_visit"))
-    rec["clinical"]["follow_up"] = normalize_follow_up(rec["clinical"].get("follow_up"))
+    if rec["meta"].get("visit_datetime") is None and EXTRACT_DATETIME:
+        rec["meta"]["visit_datetime"] = EXTRACT_DATETIME(text)
 
-    if rec["clinical"]["reason_for_visit"] is None and EXTRACT_REASON:
-        rec["clinical"]["reason_for_visit"] = normalize_reason(EXTRACT_REASON(text))
+    reason = rec["clinical"].get("reason_for_visit")
+    rec["clinical"]["reason_for_visit"] = _normalize_reason(reason)
 
-    if rec["clinical"]["follow_up"] is None and "nuovo controllo" in (text or "").lower():
-        rec["clinical"]["follow_up"] = "programmato nuovo controllo"
-
-    rec["clinical"]["interventions"] = normalize_interventions(
+    vitals = rec["clinical"].get("vitals", {}) or {}
+    rec["clinical"]["interventions"] = _normalize_interventions(
         rec["clinical"].get("interventions", []),
         text=text,
         reason=rec["clinical"].get("reason_for_visit"),
+        vitals=vitals,
     )
 
-    vitals = rec.get("clinical", {}).get("vitals", {}) or {}
-    has_any_vital = any(
-        vitals.get(k) is not None
-        for k in ["blood_pressure_systolic", "blood_pressure_diastolic", "heart_rate", "temperature", "spo2"]
-    )
+    if rec["clinical"].get("follow_up") is None and EXTRACT_FOLLOW_UP:
+        rec["clinical"]["follow_up"] = EXTRACT_FOLLOW_UP(text)
 
-    if has_any_vital and "monitoraggio_parametri_vitali" not in rec["clinical"]["interventions"]:
-        rec["clinical"]["interventions"].insert(0, "monitoraggio_parametri_vitali")
-
-    rec["clinical"]["follow_up"] = follow_up_to_struct(rec["clinical"].get("follow_up"))
+    rec["clinical"]["critical_issues"] = list(dict.fromkeys(rec["clinical"].get("critical_issues", []) + _infer_critical_issues(text)))
 
 
 def run_quality_check(rec: Dict[str, Any], text: str) -> Dict[str, Any]:
@@ -545,7 +583,7 @@ def save_example(record_id: str, rec: Dict[str, Any], raw_text: str, processed_t
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--use-llm", action="store_true", help="Use LLM extraction only")
-    parser.add_argument("--hybrid", action="store_true", help="Use hybrid extraction (recommended)")
+    parser.add_argument("--hybrid", action="store_true", help="Use hybrid extraction")
     parser.add_argument("--model", default="llama3.1:8b", help="LLM model name (Ollama)")
     args = parser.parse_args()
 
@@ -580,16 +618,19 @@ def main() -> None:
             rec = build_base_record(record_id, mode=mode, model=args.model)
 
             if args.hybrid:
-                _ = apply_hybrid(text, rec, args.model, record_id=record_id)
+                _ = apply_hybrid(text, rec, args.model)
             elif args.use_llm:
-                _ = apply_llm(text, rec, args.model, record_id=record_id)
+                _ = apply_llm(text, rec, args.model)
             else:
                 apply_rules(text, rec)
 
             postprocess_record(rec, text)
 
             q = run_quality_check(rec, text)
-            rec["quality"]["missing_mandatory_fields"] = q.get("missing_fields", [])
+            rec["quality"]["missing_mandatory_fields"] = q.get(
+                "missing_mandatory_fields",
+                q.get("missing_fields", []),
+            )
             rec["quality"]["warnings"] = q.get("warnings", [])
 
             out_path = save_prediction(record_id, rec)
@@ -599,7 +640,6 @@ def main() -> None:
             if exported_examples < MAX_EXAMPLE_EXPORTS:
                 save_example(record_id, rec, raw_text=raw, processed_text=text)
                 exported_examples += 1
-                log_debug(f"EXAMPLE_EXPORTED {record_id}")
 
             records_ok += 1
 

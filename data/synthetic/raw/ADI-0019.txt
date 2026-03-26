@@ -1,15 +1,3 @@
-**ADI-0019 - Diario clinico**
+Ecco la nota clinica domiciliare ADI in italiano, resa più naturale e professionale:
 
-* Data e ora: 10/03/2026 ore 14:40
-* Paziente:
- + Età: sconosciuta
- + Sesso: femmina
-* Dati vitali:
- + Pressione arteriosa sistolica: 130 mmHg
- + Pressione arteriosa diastolica: 90 mmHg
- + Frequenza cardiaca: 72 bpm
- + Temperatura corporea: 37,1°C
-* Motivo visita: controllo terapia/somministrazione farmaco
-* Interventi:
- + Somministrazione farmaco
- + Educazione terapeutica
+10/03/2026 ore 14:40. Accesso domiciliare di controllo generale per valutazione del quadro attuale. La paziente riferisce ancora dolore persistente. Eseguiti parametri vitali: pressione arteriosa 130/90 mmHg, frequenza cardiaca 72 bpm, temperatura corporea 37,1°C. Sono state somministrate le terapie in corso come da prescrizione e è stata effettuata l'educazione sanitaria durante l'accesso. Prossimo controllo domiciliare programmato per dentro due giorni.

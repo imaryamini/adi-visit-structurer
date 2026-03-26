@@ -1,28 +1,3 @@
-**DIARIO CLINICO**
+Ecco la nota clinica domiciliare ADI in italiano, scritta in un stile professionale e realistico:
 
-12/02/2026 ore 09:40
-
-**DATI DEL PATIENTE**
-Non disponibile
-
-**VITALI**
-
-* Tensione arteriosa sistolica: 150 mmHg
-* Tensione arteriosa diastolica: 80 mmHg
-* Frequenza cardiaca: 98 bpm
-* Temperatura corporea: 36,7 °C
-* SpO2: 99%
-
-**INTERVENTI**
-- Medicazione
-- Valutazione generale
-
-**RESONI PER LA VISITA**
-Medicazione/controllo lesione
-
-**PUNTTI DI FORTEZZA E DEBOLEZZA**
-
- Nessun punto di forza/ debolezza presente nel record.
-
-**PROSSIMO CONTROLLLO**
-Prossimo controllo per controllo ferita, in 3 gg.
+12/02/2026 ore 09:40. Accesso domiciliare di controllo generale. La paziente è in corso di trattamento per la lesione già segnalata. I parametri vitali rilevati sono: pressione arteriosa 150/80 mmHg, frequenza cardiaca 98 bpm, temperatura corporea 36,7°C e saturazione di ossigeno 99%. La medicazione della lesione è stata eseguita secondo indicazioni. Eseguita una rivalutazione clinica generale. Programmato controllo della lesione entro tre giorni.

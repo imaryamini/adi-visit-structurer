@@ -1,15 +1,1 @@
-**Dettatura del diario clinico - ADI-0069**
-
-**Data e ora:** 28/02/2026 ore 15:00
-
-**Parametri vitali:**
-
-* Tensione arteriosa sistolica: 130 mmHg
-* Tensione arteriosa diastolica: 85 mmHg
-* Frequenza cardiaca: 72 bpm
-* Temperatura corporea: 36,7°C
-* SpO2: 98%
-
-**Interventi:** Monitoraggio dei parametri vitali
-
-**Follow-up:** Controllo in 7 giorni
+28/02/2026 ore 15:00. Si è svolto accesso domiciliare per controllo parametri vitali su paziente vigile e collaborante durante l'accesso. I dati raccolti sono i seguenti: pressione arteriosa sistolica 130 mmHg, pressione arteriosa diastolica 85 mmHg, frequenza cardiaca 72 bpm, temperatura corporea 36,7°C, saturazione ossigeno 98%. Eseguito monitoraggio dei parametri vitali. È stato programmato nuovo controllo domiciliare per la data odierna dopo 7 giorni.

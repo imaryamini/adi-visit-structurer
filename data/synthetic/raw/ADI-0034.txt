@@ -1,14 +1,7 @@
-**ADI-0034 - 10/02/2026 18:00**
+Ecco la nota clinica domiciliare ADI in italiano, redatta con stile breve e realistico:
 
-* Paziente: femmina
-* Motivo visita: riferiti sintomi generali
-* Anamnesi breve: nessuna annotazione
-* Parametri vitali:
- + Pressione arteriosa sistolica e diastolica: non misurata
- + Frequenza cardiaca: non misurata
- + Temperatura: non misurata
-* Interventi eseguiti: valutazione generale, educazione alimentare
-* Problemi clinici attuali:
- + Inappetenza
- + Nausea
-* Rischi identificati: rischio di malnutrizione
+10/02/2026 ore 18:00.
+
+Il paziente è stato valutato per i sintomi riferiti di inappetenza e nausea. Si è effettuata una valutazione generale del paziente. Il caregiver verrà ricontattato telefonicamente per monitorare la situazione.
+
+Nota: si rimanda a un'eventuale ulteriore revisione clinica se necessaria.

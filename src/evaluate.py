@@ -1,331 +1,325 @@
-#!/usr/bin/env python3
-from __future__ import annotations
-
-import argparse
 import json
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+
+GOLD_DIR = Path("data/synthetic/gold")
+PRED_DIR = Path("data/synthetic/pred")
+REPORTS_DIR = Path("reports")
 
 
-VITAL_KEYS = [
-    "blood_pressure_systolic",
-    "blood_pressure_diastolic",
-    "heart_rate",
-    "temperature",
-    "spo2",
-]
+def load_json(path: Path):
+    with path.open("r", encoding="utf-8") as f:
+        return json.load(f)
 
 
-def load_json(p: Path) -> Dict[str, Any]:
-    return json.loads(p.read_text(encoding="utf-8"))
+def safe_get(dct, *keys, default=None):
+    cur = dct
+    for k in keys:
+        if not isinstance(cur, dict) or k not in cur:
+            return default
+        cur = cur[k]
+    return cur
 
 
-def normalize_scalar(x: Any) -> Any:
-    if x is None:
+def canonical_reason(label: str | None) -> str | None:
+    if not label:
         return None
 
-    if isinstance(x, bool):
-        return x
+    t = str(label).strip().lower()
 
-    if isinstance(x, (int, float)):
-        return x
+    mapping = {
+        "controllo parametri": "controllo_parametri",
+        "monitoraggio segni vitali e verifica terapia": "controllo_terapia",
+        "controllo pressione e rivalutazione terapia": "controllo_terapia",
+        "controllo terapia e somministrazione farmaco": "controllo_terapia",
+        "medicazione lesione da pressione": "medicazione_lesione",
+        "medicazione piaga da decubito": "medicazione_lesione",
+        "medicazione/controllo lesione": "medicazione_lesione",
+        "medicazione e controllo lesione": "medicazione_lesione",
+        "valutazione dolore cronico": "rivalutazione_dolore",
+        "valutazione dolore e controllo parametri": "rivalutazione_dolore",
+        "rivalutazione dolore": "rivalutazione_dolore",
+        "dolore al ginocchio destro": "rivalutazione_dolore",
+        "controllo e gestione catetere": "controllo_catetere",
+        "controllo e gestione stomia": "controllo_stomia",
+        "controllo respiratorio e gestione ossigenoterapia": "controllo_respiratorio",
+        "riferiti sintomi generali": "sintomi_generali",
+        "stanchezza e scarso appetito": "sintomi_generali",
+        "educazione caregiver e controllo generale": "controllo_generale",
+        "rivalutazione caduta recente": "caduta",
+        "controllo generale": "controllo_generale",
+        "valutazione delle condizioni generali": "controllo_generale",
+    }
 
-    if isinstance(x, dict):
-        return {k: normalize_scalar(v) for k, v in sorted(x.items())}
+    if t in mapping:
+        return mapping[t]
 
-    s = str(x).strip().lower()
+    if "lesione" in t or "ferita" in t or "medicazione" in t or "decubito" in t:
+        return "medicazione_lesione"
+    if "dolore" in t or "algia" in t:
+        return "rivalutazione_dolore"
+    if "catetere" in t:
+        return "controllo_catetere"
+    if "stomia" in t:
+        return "controllo_stomia"
+    if "ossigenoterapia" in t or "respiratorio" in t:
+        return "controllo_respiratorio"
+    if "caduta" in t:
+        return "caduta"
+    if "terapia" in t or "farmaco" in t:
+        return "controllo_terapia"
+    if "parametri" in t or "segni vitali" in t or "pressione" in t:
+        return "controllo_parametri"
+    if "astenia" in t or "inappetenza" in t or "nausea" in t or "capogiro" in t or "appetito" in t or "stanchezza" in t:
+        return "sintomi_generali"
+    if "generali" in t or "controllo generale" in t or "rivalutazione clinica" in t:
+        return "controllo_generale"
 
-    if s == "":
+    return t
+
+
+def canonical_problem(label: str | None) -> str | None:
+    if not label:
         return None
 
-    # Try numeric normalization
-    try:
-        if "." in s or "," in s:
-            return float(s.replace(",", "."))
-        return int(s)
-    except ValueError:
-        pass
+    t = str(label).strip().lower()
 
-    return s
+    mapping = {
+        "dolore": "dolore_cronico",
+        "dolore_cronico": "dolore_cronico",
+        "dolore cronico": "dolore_cronico",
+
+        "lesione": "lesione_da_pressione",
+        "lesione_da_pressione": "lesione_da_pressione",
+        "lesione da pressione": "lesione_da_pressione",
+        "piaga da decubito": "lesione_da_pressione",
+        "decubito": "lesione_da_pressione",
+        "ferita": "lesione_da_pressione",
+        "ulcera": "lesione_da_pressione",
+
+        "caduta": "caduta",
+        "rischio_caduta": "rischio_caduta",
+
+        "ipertensione": "ipertensione",
+        "bpco": "bpco",
+        "scompenso_cardiaco": "scompenso_cardiaco",
+        "diabete_tipo_2": "diabete_tipo_2",
+        "malnutrizione": "malnutrizione",
+        "disidratazione": "disidratazione",
+        "astenia": "astenia",
+        "nausea": "nausea",
+        "capogiro": "capogiro",
+    }
+
+    if t in mapping:
+        return mapping[t]
+
+    if "dolore" in t:
+        return "dolore_cronico"
+    if "lesione" in t or "ferita" in t or "ulcera" in t or "decubito" in t:
+        return "lesione_da_pressione"
+    if "caduta" in t:
+        return "caduta"
+    if "pressione" in t or "ipertension" in t:
+        return "ipertensione"
+    if "dispnea" in t or "bpco" in t:
+        return "bpco"
+    if "scompenso" in t:
+        return "scompenso_cardiaco"
+    if "diabete" in t or "glicemia" in t:
+        return "diabete_tipo_2"
+    if "appetito" in t or "inappetenza" in t:
+        return "malnutrizione"
+    if "disidrat" in t:
+        return "disidratazione"
+    if "astenia" in t or "stanchezza" in t or "debolezza" in t:
+        return "astenia"
+    if "nausea" in t:
+        return "nausea"
+    if "capogiro" in t or "vertigin" in t:
+        return "capogiro"
+
+    return t
 
 
-def safe_str(x: Any) -> str:
-    if x is None:
-        return ""
-    if isinstance(x, dict):
-        return json.dumps(normalize_scalar(x), ensure_ascii=False, sort_keys=True)
-    return str(normalize_scalar(x) if normalize_scalar(x) is not None else "").strip().lower()
+def canonicalize_problem_list(items):
+    out = []
+    for item in items or []:
+        c = canonical_problem(item)
+        if c:
+            out.append(c)
+    return sorted(set(out))
 
 
-def safe_list(x: Any) -> List[str]:
-    if x is None:
-        return []
-    if isinstance(x, list):
-        return [str(normalize_scalar(i)).strip().lower() for i in x if normalize_scalar(i) is not None]
-    val = normalize_scalar(x)
-    return [str(val).strip().lower()] if val is not None else []
-
-
-def set_metrics(pred: set[str], gold: set[str]) -> Tuple[float, float, float]:
-    tp = len(pred & gold)
-    fp = len(pred - gold)
-    fn = len(gold - pred)
-
-    precision = tp / (tp + fp) if (tp + fp) else (1.0 if len(gold) == 0 else 0.0)
-    recall = tp / (tp + fn) if (tp + fn) else 1.0
-    f1 = (2 * precision * recall / (precision + recall)) if (precision + recall) else 0.0
-    return precision, recall, f1
-
-
-def normalize_vital_value(x: Any) -> Any:
-    if x is None:
+def normalize_follow_up(fu):
+    if fu is None:
         return None
 
-    if isinstance(x, str):
-        s = x.strip().replace(",", ".")
-        try:
-            if "." in s:
-                return float(s)
-            return int(s)
-        except ValueError:
-            return s.lower()
+    if isinstance(fu, str):
+        s = fu.strip().lower()
+        if "telefon" in s:
+            return {"type": "ricontatto_telefonico", "timing_days": None, "target": None}
+        if "ferita" in s or "lesione" in s:
+            return {"type": "controllo_ferita", "timing_days": None}
+        if "controllo" in s or "rivalutazione" in s:
+            return {"type": "controllo", "timing_days": None}
+        return {"type": s, "timing_days": None}
 
-    return x
+    if isinstance(fu, dict):
+        out = {"type": fu.get("type"), "timing_days": fu.get("timing_days")}
+        if "target" in fu:
+            out["target"] = fu.get("target")
+        return out
+
+    return None
 
 
-def vitals_exact_match(pred_v: Dict[str, Any], gold_v: Dict[str, Any]) -> bool:
-    for k in VITAL_KEYS:
-        if normalize_vital_value(pred_v.get(k)) != normalize_vital_value(gold_v.get(k)):
+def follow_up_equal(gold_fu, pred_fu):
+    g = normalize_follow_up(gold_fu)
+    p = normalize_follow_up(pred_fu)
+    return g == p
+
+
+def vitals_equal(gold_v, pred_v):
+    keys = [
+        "blood_pressure_systolic",
+        "blood_pressure_diastolic",
+        "heart_rate",
+        "temperature",
+        "spo2",
+    ]
+    gold_v = gold_v or {}
+    pred_v = pred_v or {}
+    for k in keys:
+        if gold_v.get(k) != pred_v.get(k):
             return False
     return True
 
 
-def diff_vitals(pred_v: Dict[str, Any], gold_v: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
-    diffs: Dict[str, Dict[str, Any]] = {}
-    for k in VITAL_KEYS:
-        pv = normalize_vital_value(pred_v.get(k))
-        gv = normalize_vital_value(gold_v.get(k))
-        if pv != gv:
-            diffs[k] = {"pred": pv, "gold": gv}
-    return diffs
+def f1_for_multilabel(gold_items, pred_items):
+    gold_set = set(gold_items or [])
+    pred_set = set(pred_items or [])
+
+    tp = len(gold_set & pred_set)
+    fp = len(pred_set - gold_set)
+    fn = len(gold_set - pred_set)
+
+    precision = tp / (tp + fp) if (tp + fp) else 0.0
+    recall = tp / (tp + fn) if (tp + fn) else 0.0
+    f1 = (2 * precision * recall / (precision + recall)) if (precision + recall) else 0.0
+    return precision, recall, f1
 
 
-def round4(x: float) -> float:
-    return round(x, 4)
+def macro_metric_over_records(pairs, gold_getter, pred_getter):
+    precisions = []
+    recalls = []
+    f1s = []
+
+    for gold, pred in pairs:
+        p, r, f1 = f1_for_multilabel(gold_getter(gold), pred_getter(pred))
+        precisions.append(p)
+        recalls.append(r)
+        f1s.append(f1)
+
+    n = len(pairs) or 1
+    return sum(precisions) / n, sum(recalls) / n, sum(f1s) / n
 
 
-def main() -> None:
-    ap = argparse.ArgumentParser(description="Evaluate ADI predictions vs gold.")
-    ap.add_argument("--gold_dir", default="data/synthetic/gold", help="Gold JSON folder")
-    ap.add_argument("--pred_dir", default="data/synthetic/pred", help="Prediction JSON folder")
-    ap.add_argument("--pattern", default="ADI-*.json", help="Filename pattern")
-    ap.add_argument("--out", default="reports/metrics.json", help="Output metrics path")
-    args = ap.parse_args()
+def main():
+    REPORTS_DIR.mkdir(parents=True, exist_ok=True)
 
-    gold_dir = Path(args.gold_dir)
-    pred_dir = Path(args.pred_dir)
-    out_path = Path(args.out)
-    out_path.parent.mkdir(parents=True, exist_ok=True)
+    gold_files = {p.stem: p for p in GOLD_DIR.glob("ADI-*.json")}
+    pred_files = {p.stem: p for p in PRED_DIR.glob("ADI-*.json")}
 
-    gold_files = sorted(gold_dir.glob(args.pattern))
-    pred_files = sorted(pred_dir.glob(args.pattern))
+    common_ids = sorted(set(gold_files) & set(pred_files))
+    gold_only = sorted(set(gold_files) - set(pred_files))
+    pred_only = sorted(set(pred_files) - set(gold_files))
 
-    gold_ids = {p.stem for p in gold_files}
-    pred_ids = {p.stem for p in pred_files}
-    common_ids = sorted(gold_ids & pred_ids)
-
-    gold_only = sorted(gold_ids - pred_ids)
-    pred_only = sorted(pred_ids - gold_ids)
-
-    if not common_ids:
-        metrics = {
-            "summary": {
-                "n_records": 0,
-                "text_field_accuracy": {
-                    "clinical.reason_for_visit": 0.0,
-                    "clinical.follow_up": 0.0,
-                },
-                "vitals_exact_match_rate": 0.0,
-                "list_f1_macro": {
-                    "clinical.interventions": {"precision": 0.0, "recall": 0.0, "f1": 0.0},
-                    "coding.problems_normalized": {"precision": 0.0, "recall": 0.0, "f1": 0.0},
-                },
-            },
-            "per_record": {},
-            "dataset_alignment": {
-                "gold_only_ids": gold_only,
-                "pred_only_ids": pred_only,
-            },
-            "debug": {
-                "gold_dir": str(gold_dir),
-                "pred_dir": str(pred_dir),
-                "n_gold": len(gold_files),
-                "n_pred": len(pred_files),
-                "common_ids": 0,
-            },
-        }
-        out_path.write_text(json.dumps(metrics, ensure_ascii=False, indent=2), encoding="utf-8")
-        print(f"Wrote {out_path}")
-        print("No matching prediction/gold pairs found.")
-        return
-
-    reason_ok = 0
-    follow_ok = 0
-    vitals_ok = 0
-
-    int_p_sum = int_r_sum = int_f1_sum = 0.0
-    prob_p_sum = prob_r_sum = prob_f1_sum = 0.0
-
-    per_record: Dict[str, Any] = {}
-
-    reason_mismatches: List[str] = []
-    follow_mismatches: List[str] = []
-    vitals_mismatches: List[str] = []
-
+    pairs = []
     for rid in common_ids:
-        gold = load_json(gold_dir / f"{rid}.json")
-        pred = load_json(pred_dir / f"{rid}.json")
+        gold = load_json(gold_files[rid])
+        pred = load_json(pred_files[rid])
+        pairs.append((gold, pred))
 
-        gold_cl = gold.get("clinical", {}) or {}
-        pred_cl = pred.get("clinical", {}) or {}
+    n = len(pairs)
 
-        g_reason = safe_str(gold_cl.get("reason_for_visit"))
-        p_reason = safe_str(pred_cl.get("reason_for_visit"))
-        reason_match = (g_reason == p_reason)
-        if reason_match:
-            reason_ok += 1
+    reason_correct = 0
+    follow_up_correct = 0
+    vitals_correct = 0
+    reason_errors = []
+
+    for gold, pred in pairs:
+        rid = safe_get(gold, "meta", "record_id", default="UNKNOWN")
+
+        gold_reason = canonical_reason(safe_get(gold, "clinical", "reason_for_visit"))
+        pred_reason = canonical_reason(safe_get(pred, "clinical", "reason_for_visit"))
+
+        if gold_reason == pred_reason:
+            reason_correct += 1
         else:
-            reason_mismatches.append(rid)
+            reason_errors.append({
+                "record_id": rid,
+                "gold_reason_raw": safe_get(gold, "clinical", "reason_for_visit"),
+                "pred_reason_raw": safe_get(pred, "clinical", "reason_for_visit"),
+                "gold_reason_canonical": gold_reason,
+                "pred_reason_canonical": pred_reason,
+            })
 
-        g_follow = safe_str(gold_cl.get("follow_up"))
-        p_follow = safe_str(pred_cl.get("follow_up"))
-        follow_match = (g_follow == p_follow)
-        if follow_match:
-            follow_ok += 1
-        else:
-            follow_mismatches.append(rid)
+        if follow_up_equal(
+            safe_get(gold, "clinical", "follow_up"),
+            safe_get(pred, "clinical", "follow_up"),
+        ):
+            follow_up_correct += 1
 
-        g_v = gold_cl.get("vitals", {}) or {}
-        p_v = pred_cl.get("vitals", {}) or {}
-        v_ok = vitals_exact_match(p_v, g_v)
-        if v_ok:
-            vitals_ok += 1
-        else:
-            vitals_mismatches.append(rid)
+        if vitals_equal(
+            safe_get(gold, "clinical", "vitals", default={}),
+            safe_get(pred, "clinical", "vitals", default={}),
+        ):
+            vitals_correct += 1
 
-        g_int = set(safe_list(gold_cl.get("interventions")))
-        p_int = set(safe_list(pred_cl.get("interventions")))
-        ip, ir, if1 = set_metrics(p_int, g_int)
-        int_p_sum += ip
-        int_r_sum += ir
-        int_f1_sum += if1
+    reason_acc = reason_correct / n if n else 0.0
+    follow_up_acc = follow_up_correct / n if n else 0.0
+    vitals_acc = vitals_correct / n if n else 0.0
 
-        gold_cod = gold.get("coding", {}) or {}
-        pred_cod = pred.get("coding", {}) or {}
-        g_prob = set(safe_list(gold_cod.get("problems_normalized")))
-        p_prob = set(safe_list(pred_cod.get("problems_normalized")))
-        pp, pr, pf1 = set_metrics(p_prob, g_prob)
-        prob_p_sum += pp
-        prob_r_sum += pr
-        prob_f1_sum += pf1
+    int_p, int_r, int_f1 = macro_metric_over_records(
+        pairs,
+        lambda g: safe_get(g, "clinical", "interventions", default=[]),
+        lambda p: safe_get(p, "clinical", "interventions", default=[]),
+    )
 
-        per_record[rid] = {
-            "text_match": {
-                "clinical.reason_for_visit": reason_match,
-                "clinical.follow_up": follow_match,
-            },
-            "text_values": {
-                "clinical.reason_for_visit": {"pred": p_reason, "gold": g_reason},
-                "clinical.follow_up": {"pred": p_follow, "gold": g_follow},
-            },
-            "vitals_exact_match": v_ok,
-            "vitals_diff": diff_vitals(p_v, g_v),
-            "set_comparison": {
-                "clinical.interventions": {
-                    "pred": sorted(p_int),
-                    "gold": sorted(g_int),
-                    "missing_from_pred": sorted(g_int - p_int),
-                    "extra_in_pred": sorted(p_int - g_int),
-                },
-                "coding.problems_normalized": {
-                    "pred": sorted(p_prob),
-                    "gold": sorted(g_prob),
-                    "missing_from_pred": sorted(g_prob - p_prob),
-                    "extra_in_pred": sorted(p_prob - g_prob),
-                },
-            },
-            "f1_macro": {
-                "clinical.interventions": {
-                    "precision": round4(ip),
-                    "recall": round4(ir),
-                    "f1": round4(if1),
-                },
-                "coding.problems_normalized": {
-                    "precision": round4(pp),
-                    "recall": round4(pr),
-                    "f1": round4(pf1),
-                },
-            },
-        }
-
-    n = len(common_ids)
+    prob_p, prob_r, prob_f1 = macro_metric_over_records(
+        pairs,
+        lambda g: canonicalize_problem_list(safe_get(g, "coding", "problems_normalized", default=[])),
+        lambda p: canonicalize_problem_list(safe_get(p, "coding", "problems_normalized", default=[])),
+    )
 
     metrics = {
-        "summary": {
-            "n_records": n,
-            "text_field_accuracy": {
-                "clinical.reason_for_visit": round4(reason_ok / n),
-                "clinical.follow_up": round4(follow_ok / n),
-            },
-            "vitals_exact_match_rate": round4(vitals_ok / n),
-            "list_f1_macro": {
-                "clinical.interventions": {
-                    "precision": round4(int_p_sum / n),
-                    "recall": round4(int_r_sum / n),
-                    "f1": round4(int_f1_sum / n),
-                },
-                "coding.problems_normalized": {
-                    "precision": round4(prob_p_sum / n),
-                    "recall": round4(prob_r_sum / n),
-                    "f1": round4(prob_f1_sum / n),
-                },
-            },
-        },
-        "error_analysis": {
-            "reason_mismatches": reason_mismatches,
-            "follow_up_mismatches": follow_mismatches,
-            "vitals_mismatches": vitals_mismatches,
-        },
-        "per_record": per_record,
-        "dataset_alignment": {
-            "gold_only_ids": gold_only,
-            "pred_only_ids": pred_only,
-        },
-        "debug": {
-            "gold_dir": str(gold_dir),
-            "pred_dir": str(pred_dir),
-            "n_gold": len(gold_files),
-            "n_pred": len(pred_files),
-            "common_ids": n,
-        },
+        "records_evaluated": n,
+        "reason_for_visit_accuracy": round(reason_acc, 4),
+        "follow_up_accuracy": round(follow_up_acc, 4),
+        "vitals_exact_match_rate": round(vitals_acc, 4),
+        "interventions_macro_precision": round(int_p, 4),
+        "interventions_macro_recall": round(int_r, 4),
+        "interventions_macro_f1": round(int_f1, 4),
+        "problems_macro_precision": round(prob_p, 4),
+        "problems_macro_recall": round(prob_r, 4),
+        "problems_macro_f1": round(prob_f1, 4),
+        "gold_only_ids": gold_only,
+        "pred_only_ids": pred_only,
+        "reason_mismatches_sample": reason_errors[:15],
     }
 
-    out_path.write_text(json.dumps(metrics, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(f"Wrote {out_path}")
+    metrics_path = REPORTS_DIR / "metrics.json"
+    with metrics_path.open("w", encoding="utf-8") as f:
+        json.dump(metrics, f, ensure_ascii=False, indent=2)
 
+    print(f"Wrote {metrics_path}")
     print("\nEvaluation summary")
     print(f"- records evaluated: {n}")
-    print(f"- reason_for_visit accuracy: {round4(reason_ok / n)}")
-    print(f"- follow_up accuracy: {round4(follow_ok / n)}")
-    print(f"- vitals exact match rate: {round4(vitals_ok / n)}")
-    print(
-        f"- interventions macro F1: {round4(int_f1_sum / n)} "
-        f"(P={round4(int_p_sum / n)}, R={round4(int_r_sum / n)})"
-    )
-    print(
-        f"- problems macro F1: {round4(prob_f1_sum / n)} "
-        f"(P={round4(prob_p_sum / n)}, R={round4(prob_r_sum / n)})"
-    )
+    print(f"- reason_for_visit accuracy: {reason_acc:.2f}")
+    print(f"- follow_up accuracy: {follow_up_acc:.2f}")
+    print(f"- vitals exact match rate: {vitals_acc:.2f}")
+    print(f"- interventions macro F1: {int_f1:.4f} (P={int_p:.4f}, R={int_r:.4f})")
+    print(f"- problems macro F1: {prob_f1:.4f} (P={prob_p:.4f}, R={prob_r:.4f})")
 
     if gold_only or pred_only:
         print("\nDataset alignment warnings")

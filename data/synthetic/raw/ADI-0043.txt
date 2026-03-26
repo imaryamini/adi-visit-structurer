@@ -1,23 +1,5 @@
-**DIARIO CLINICO**
-================
+Ecco la nota clinica domiciliare ADI in italiano, redatta nel rispetto delle regole indicate:
 
-**Data e ora:** 11/02/2026 14:20
+11/02/2026 ore 14:20. Accesso domiciliare per il controllo dei parametri vitali del paziente. Le condizioni generali sono stabili. Sono stati rilevati i seguenti valori: pressione arteriosa sistolica 110 mmHg e diastolica 80 mmHg, frequenza cardiaca 60 battiti al minuto, temperatura corporea 36,2°C. Eseguito monitoraggio dei parametri vitali. Prossimo controllo domiciliare in programma per le prossime sette giorni.
 
-**Paziente:**
-
-* Nome/Id paziente: SYNTH-ADI-0043
-* Età: 81 anni
-* Sesso: Maschio
-
-**Visita di controllo parametri**
-
-* Pressione arteriosa sistolica: 110 mmHg
-* Pressione arteriosa diastolica: 80 mmHg
-* Frequenza cardiaca: 60 battiti/minuto
-* Temperatura corporea: 36,2 °C
-
-**Interventi:**
-Monitoraggio parametri vitali
-
-**Prossimo controllo:**
- Controllo in 7 giorni
+Nota: Ho lasciato l'inclusione della "SpO2 non menzionata" come avviso nella versione originale del JSON, ma sarebbe meglio rimuoverla o specificarne il valore reale se disponibile.

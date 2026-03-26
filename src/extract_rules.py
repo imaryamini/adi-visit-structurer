@@ -1,78 +1,84 @@
-# src/extract_rules.py
 import re
-from dateutil import parser
+from datetime import datetime
+from typing import Any, Optional
 
 
-# ----------------------------
-# DATETIME
-# ----------------------------
-def extract_datetime(text: str):
+def _clean_spaces(text: str) -> str:
+    return re.sub(r"\s+", " ", (text or "").strip())
+
+
+def _sentences(text: str) -> list[str]:
+    text = (text or "").replace("\n", ". ")
+    parts = re.split(r"[.;]\s+|\n+", text)
+    return [_clean_spaces(p) for p in parts if _clean_spaces(p)]
+
+
+def _contains_any(text: str, patterns: list[str]) -> bool:
+    t = (text or "").lower()
+    return any(re.search(p, t, flags=re.IGNORECASE) for p in patterns)
+
+
+def extract_datetime(text: str) -> Optional[str]:
     patterns = [
         r"(\d{1,2}/\d{1,2}/\d{4})\s*(?:ore|alle)?\s*(\d{1,2}:\d{2})",
+        r"(\d{1,2}-\d{1,2}-\d{4})\s*(?:ore|alle)?\s*(\d{1,2}:\d{2})",
     ]
-    for p in patterns:
-        m = re.search(p, text, flags=re.IGNORECASE)
-        if m:
-            dt_str = f"{m.group(1)} {m.group(2)}"
-            try:
-                dt = parser.parse(dt_str, dayfirst=True)
-                return dt.isoformat()
-            except Exception:
-                return None
+    for pat in patterns:
+        m = re.search(pat, text, flags=re.IGNORECASE)
+        if not m:
+            continue
+        date_part = m.group(1).replace("-", "/")
+        time_part = m.group(2)
+        try:
+            dt = datetime.strptime(f"{date_part} {time_part}", "%d/%m/%Y %H:%M")
+            return dt.isoformat()
+        except Exception:
+            continue
     return None
 
 
-# ----------------------------
-# BLOOD PRESSURE (SAFE)
-# ----------------------------
 def extract_bp(text: str):
-    """
-    Safe BP extraction that avoids matching dates like 24/02/2026.
-    Handles PA 135/80, PA135/80, Pressione 135-80, 135/80 mmHg, Valori: 128/76
-    """
     lines = [l.strip() for l in text.splitlines() if l.strip()]
-
     bp_patterns = [
         re.compile(r"\bPA\s*[:=]?\s*(\d{2,3})\s*/\s*(\d{2,3})\b", re.IGNORECASE),
-        re.compile(r"\bPA\s*(\d{2,3})\s*/\s*(\d{2,3})\b", re.IGNORECASE),
-        re.compile(r"\bpressione\s*(\d{2,3})\s*[-/]\s*(\d{2,3})\b", re.IGNORECASE),
+        re.compile(r"\bPA\s*[:=]?\s*(\d{2,3})\s*-\s*(\d{2,3})\b", re.IGNORECASE),
+        re.compile(r"\bpressione(?: arteriosa)?(?: sistolica/diastolica)?\s*[:=]?\s*(\d{2,3})\s*/\s*(\d{2,3})\b", re.IGNORECASE),
+        re.compile(r"\bpressione arteriosa\s*(\d{2,3})/(\d{2,3})\b", re.IGNORECASE),
         re.compile(r"\b(\d{2,3})\s*/\s*(\d{2,3})\s*(?:mmhg)?\b", re.IGNORECASE),
-        re.compile(r"\b(\d{2,3})\s*-\s*(\d{2,3})\b", re.IGNORECASE),
+        re.compile(r"\b(\d{2,3})\s*-\s*(\d{2,3})\s*(?:mmhg)?\b", re.IGNORECASE),
     ]
 
-    allowed_cues = ("pa", "pressione", "parametri", "valori", "mmhg", "fc", "bpm", "temp", " t ", "spo2", "saturazione", "sato2")
+    verbose_pat = re.compile(
+        r"pressione arteriosa(?: di)?\s*(\d{2,3})\s*mmhg\s*\(sistolica\)\s*e\s*(\d{2,3})\s*mmhg\s*\(diastolica\)",
+        re.IGNORECASE,
+    )
 
     for line in lines:
-        low = line.lower()
-
-        if not any(cue in low for cue in allowed_cues):
-            continue
-
-        # Avoid date lines unless explicitly BP-cued
-        if re.search(r"\b\d{1,2}/\d{1,2}/\d{2,4}\b", line):
-            if "pa" not in low and "pressione" not in low:
-                continue
+        m = verbose_pat.search(line)
+        if m:
+            sys_v = int(m.group(1))
+            dia_v = int(m.group(2))
+            if 70 <= sys_v <= 250 and 40 <= dia_v <= 150 and sys_v > dia_v:
+                return sys_v, dia_v
 
         for pat in bp_patterns:
             m = pat.search(line)
             if m:
-                sys = int(m.group(1))
-                dia = int(m.group(2))
-                if 70 <= sys <= 250 and 40 <= dia <= 150:
-                    return sys, dia
+                sys_v = int(m.group(1))
+                dia_v = int(m.group(2))
+                if 70 <= sys_v <= 250 and 40 <= dia_v <= 150 and sys_v > dia_v:
+                    return sys_v, dia_v
 
     return None, None
 
 
-# ----------------------------
-# HEART RATE
-# ----------------------------
-def extract_hr(text: str):
+def extract_hr(text: str) -> Optional[int]:
     patterns = [
         r"\bFC\s*[:=]?\s*(\d{2,3})\b",
         r"\bHR\s*[:=]?\s*(\d{2,3})\b",
-        r"\bfrequenza\s*(\d{2,3})\s*(?:bpm)?\b",
+        r"\bfrequenza cardiaca(?: di)?\s*(\d{2,3})\b",
         r"\b(\d{2,3})\s*bpm\b",
+        r"\b(\d{2,3})\s*battiti al minuto\b",
     ]
     for p in patterns:
         m = re.search(p, text, flags=re.IGNORECASE)
@@ -83,14 +89,13 @@ def extract_hr(text: str):
     return None
 
 
-# ----------------------------
-# TEMPERATURE
-# ----------------------------
-def extract_temp(text: str):
+def extract_temp(text: str) -> Optional[float]:
     patterns = [
-        r"\btemperatura\s*[:=]?\s*([0-9]{1,2}[.,][0-9])\b",
+        r"\btemperatura(?: corporea)?\s*[:=]?\s*([0-9]{1,2}[.,][0-9])\b",
         r"\btemp\s*[:=]?\s*([0-9]{1,2}[.,][0-9])\b",
         r"\bT\s*[:=]?\s*([0-9]{1,2}[.,][0-9])\b",
+        r"\b([0-9]{1,2}[.,][0-9])\s*°\s*C\b",
+        r"\b([0-9]{1,2}[.,][0-9])\s*°C\b",
     ]
     for p in patterns:
         m = re.search(p, text, flags=re.IGNORECASE)
@@ -101,14 +106,12 @@ def extract_temp(text: str):
     return None
 
 
-# ----------------------------
-# SpO2
-# ----------------------------
-def extract_spo2(text: str):
+def extract_spo2(text: str) -> Optional[int]:
     patterns = [
         r"\bSpO2\s*[:=]?\s*(\d{2,3})\s*%?\b",
         r"\bSatO2\s*[:=]?\s*(\d{2,3})\s*%?\b",
-        r"\bsaturazione\s*[:=]?\s*(\d{2,3})\s*%?\b",
+        r"\bsaturazione(?: di ossigeno)?\s*[:=]?\s*(\d{2,3})\s*%?\b",
+        r"\bsat\.?\s*[:=]?\s*(\d{2,3})\s*%?\b",
     ]
     for p in patterns:
         m = re.search(p, text, flags=re.IGNORECASE)
@@ -119,110 +122,288 @@ def extract_spo2(text: str):
     return None
 
 
-# ----------------------------
-# REASON FOR VISIT (ROBUST)
-# ----------------------------
-def extract_reason(text: str):
-    # Primary: Motivo
-    m = re.search(r"\bMotivo(?: della visita)?\s*:\s*(.*?)(?:\.|\n|$)", text, flags=re.IGNORECASE)
-    if m:
-        reason = m.group(1).strip()
-        return reason if reason else None
+def _reason_from_keywords(text: str) -> Optional[str]:
+    t = (text or "").lower()
 
-    # Secondary: (Paziente )?Riferisce ...
-    m = re.search(r"\b(?:Paziente\s+)?Riferisce\s+(.*?)(?:\.|\n|$)", text, flags=re.IGNORECASE)
-    if m:
-        reason = m.group(1).strip()
-        return reason if reason else None
+    # Most specific first
+    if "lesione da pressione" in t:
+        return "medicazione lesione da pressione"
 
-    # Secondary: Riferito ...
-    m = re.search(r"\bRiferito\s+(.*?)(?:\.|\n|$)", text, flags=re.IGNORECASE)
-    if m:
-        reason = m.group(1).strip()
-        return reason if reason else None
+    if any(k in t for k in ["piaga da decubito", "lesione da decubito", "decubito"]):
+        return "medicazione piaga da decubito"
 
-    # Fallback: first reason-like line
-    lines = [l.strip() for l in text.splitlines() if l.strip()]
-    for line in lines:
-        low = line.lower()
+    if "dolore al ginocchio destro" in t:
+        return "dolore al ginocchio destro"
 
-        # skip header/datetime
-        if re.search(r"\b\d{1,2}/\d{1,2}/\d{4}\b", line) and re.search(r"\b\d{1,2}:\d{2}\b", line):
-            continue
-        if low.startswith("visita"):
-            continue
+    if "dolore cronico" in t:
+        return "valutazione dolore cronico"
 
-        if any(k in low for k in [
-            "controllo", "monitoraggio", "rivalutazione", "dolore", "caduta",
-            "medicazione", "verifica", "stanchezza", "appetito"
+    if any(k in t for k in ["stanchezza", "debolezza generale", "scarso appetito", "ridotto appetito"]):
+        return "stanchezza e scarso appetito"
+
+    if any(k in t for k in ["monitoraggio dei segni vitali", "segni vitali"]) and any(
+        k in t for k in ["verifica della terapia", "verifica terapia", "terapia"]
+    ):
+        return "monitoraggio segni vitali e verifica terapia"
+
+    if "pressione arteriosa" in t and any(k in t for k in ["terapia", "farmaco", "somministrazione"]):
+        return "controllo pressione e rivalutazione terapia"
+
+    if any(k in t for k in ["catetere vescicale", "catetere", "presidio urinario", "vescicale"]):
+        return "controllo e gestione catetere"
+
+    if any(k in t for k in ["presidio stomale", "cute peristomale", "stomia", "colostomia", "ileostomia"]):
+        return "controllo e gestione stomia"
+
+    if any(k in t for k in ["ossigenoterapia", "o2 terapia", "o2", "controllo respiratorio", "rivalutazione respiratoria"]):
+        return "controllo respiratorio e gestione ossigenoterapia"
+
+    if any(k in t for k in ["caduta recente", "post-caduta", "caduta", "scivolato", "trauma recente"]):
+        return "rivalutazione caduta recente"
+
+    if any(k in t for k in [
+        "cambio di medicazione",
+        "cambio medicazione",
+        "medicazione",
+        "valutata la lesione",
+        "rivalutazione della lesione",
+        "controllo della lesione",
+        "lesione già trattata",
+        "lesione locale",
+        "ferita",
+        "ulcera",
+        "piaga",
+        "lesione",
+    ]):
+        return "medicazione/controllo lesione"
+
+    if any(k in t for k in ["dolore", "algia", "sintomatologia algica", "nrs", "vas"]):
+        if any(k2 in t for k2 in [
+            "parametri vitali",
+            "controlli dei parametri vitali",
+            "monitoraggio dei parametri",
+            "pressione arteriosa",
+            "frequenza cardiaca",
+            "temperatura corporea",
         ]):
-            return line.rstrip(".")
+            return "valutazione dolore e controllo parametri"
+        return "rivalutazione dolore"
+
+    if any(k in t for k in ["astenia", "inappetenza", "nausea", "capogiro", "sintomi aspecifici", "sintomatologia generale"]):
+        return "riferiti sintomi generali"
+
+    if any(k in t for k in ["educazione del caregiver", "istruzione del caregiver", "supporto al caregiver", "caregiver", "familiare presente", "familiare"]):
+        return "educazione caregiver e controllo generale"
+
+    if any(k in t for k in [
+        "monitoraggio dei parametri vitali",
+        "monitoraggio dei parametri",
+        "controlli dei parametri vitali",
+        "controllo dei parametri vitali",
+        "controllo parametri vitali",
+        "rilevazione dei parametri vitali",
+        "rilevazione dei parametri",
+        "rilevati i seguenti parametri",
+        "parametri vitali",
+        "controllo parametri",
+    ]):
+        return "controllo parametri"
+
+    if any(k in t for k in ["valutazione delle condizioni generali", "condizioni generali"]):
+        return "controllo generale"
+
+    if any(k in t for k in ["controllo generale", "valutazione generale", "rivalutazione clinica", "accesso domiciliare di rivalutazione"]):
+        return "controllo generale"
+
     return None
 
 
-# ----------------------------
-# FOLLOW UP (ROBUST)
-# ----------------------------
-def extract_follow_up(text: str):
-    patterns = [
-        r"\bProgrammato\b.*?(?:\.|\n|$)",
-        r"\bFollow[-\s]?up\s*:\s*(.*?)(?:\.|\n|$)",
-        r"\bcontrollo\b.*?\b(prossima settimana|tra\s+\d+\s+giorni)\b.*?(?:\.|\n|$)",
-        r"\bricontatto\b.*?(?:\.|\n|$)",
+def extract_reason(text: str) -> Optional[str]:
+    sents = _sentences(text)
+    lead_sentences = sents[:3]
+    lead = " ".join(lead_sentences) if lead_sentences else text
+
+    explicit_patterns = [
+        r"\bAccesso domiciliare per\s+(.*?)(?:$|\.)",
+        r"\bAccesso per\s+(.*?)(?:$|\.)",
+        r"\bVisita ADI per\s+(.*?)(?:$|\.)",
+        r"\bVisita per\s+(.*?)(?:$|\.)",
+        r"\bVisita richiesta per\s+(.*?)(?:$|\.)",
+        r"\bLa visita di oggi è stata occasionale per\s+(.*?)(?:$|\.)",
+        r"\bLa visita di oggi è stata per\s+(.*?)(?:$|\.)",
+        r"\bSottoposto a visita per\s+(.*?)(?:$|\.)",
+        r"\bAccesso domiciliare di controllo generale per\s+(.*?)(?:$|\.)",
+        r"\bAccesso domiciliare di\s+(.*?)(?:$|\.)",
+        r"\bAccesso per rivalutazione\s+(.*?)(?:$|\.)",
+        r"\bAccesso per monitoraggio\s+(.*?)(?:$|\.)",
     ]
 
-    for p in patterns:
-        m = re.search(p, text, flags=re.IGNORECASE)
-        if not m:
-            continue
+    for p in explicit_patterns:
+        m = re.search(p, lead, flags=re.IGNORECASE)
+        if m:
+            raw_reason = _clean_spaces(m.group(1).strip(" .,:;"))
+            normalized = _reason_from_keywords(raw_reason)
+            if normalized:
+                return normalized
 
-        if m.lastindex and m.lastindex >= 1:
-            val = m.group(1).strip()
-            return val if val else None
+    for sent in lead_sentences:
+        normalized = _reason_from_keywords(sent)
+        if normalized:
+            return normalized
 
-        val = m.group(0).strip().rstrip(".")
-        return val if val else None
+    normalized = _reason_from_keywords(text)
+    if normalized:
+        return normalized
 
     return None
 
 
-# ----------------------------
-# INTERVENTIONS (SAFE, NO HALLUCINATION)
-# ----------------------------
-def extract_interventions(text: str, vitals: dict | None = None):
-    """
-    Adds 'controllo_parametri_vitali' ONLY if:
-      - at least one vital value exists, OR
-      - the text explicitly states that vitals/parameters were measured.
-    """
-    t = text.lower()
-    interventions = []
+def extract_reason_for_visit(text: str) -> str | None:
+    return extract_reason(text)
 
-    if "medicazione" in t:
-        interventions.append("medicazione")
 
-    explicit_parametri = any(
-        k in t for k in [
-            "rilevati parametri", "rilevazione parametri", "controllo parametri",
-            "monitoraggio segni vitali", "misurati parametri", "parametri rilevati"
-        ]
-    )
+def _extract_days(text: str) -> Optional[int]:
+    patterns = [
+        r"\btra\s+(\d+)\s+giorni\b",
+        r"\bentro\s+(\d+)\s+giorni\b",
+        r"\bfra\s+(\d+)\s+giorni\b",
+        r"\bentro\s+tre\s+giorni\b",
+        r"\bentro\s+due\s+giorni\b",
+        r"\bentro\s+una\s+settimana\b",
+        r"\bprossima\s+settimana\b",
+        r"\bsettimana\s+prossima\b",
+    ]
+    for p in patterns:
+        m = re.search(p, text, flags=re.IGNORECASE)
+        if m:
+            matched = m.group(0).lower()
+            if matched == "entro tre giorni":
+                return 3
+            if matched == "entro due giorni":
+                return 2
+            if matched in {"entro una settimana", "prossima settimana", "settimana prossima"}:
+                return 7
+            if m.lastindex:
+                return int(m.group(1))
+    return None
 
-    any_vital_present = False
+
+def extract_follow_up(text: str) -> Any:
+    relevant_lines = []
+    for sent in _sentences(text):
+        low = sent.lower()
+        if any(k in low for k in [
+            "follow",
+            "programmato",
+            "ricontatto",
+            "nuovo controllo",
+            "prossimo controllo",
+            "controllo tra",
+            "rivalutazione tra",
+            "da rivalutare",
+            "monitorare",
+            "previsto",
+            "entro tre giorni",
+            "prossima settimana",
+            "settimana prossima",
+        ]):
+            relevant_lines.append(sent)
+
+    relevant_text = " ".join(relevant_lines) if relevant_lines else text
+    low = relevant_text.lower()
+    days = _extract_days(relevant_text)
+
+    if "ricontatto" in low and "telefon" in low:
+        target = "caregiver" if "caregiver" in low else None
+        return {"type": "ricontatto_telefonico", "target": target, "timing_days": days}
+
+    if _contains_any(low, [r"\bferita\b", r"\blesione\b", r"\bmedicazione\b", r"\bpiaga\b", r"\bulcera\b"]):
+        if any(k in low for k in ["controllo", "rivalutazione", "programmato", "previsto", "follow"]):
+            return {"type": "controllo_ferita", "timing_days": days}
+
+    if any(k in low for k in [
+        "controllo",
+        "rivalutazione",
+        "follow",
+        "programmato",
+        "previsto",
+        "nuovo controllo",
+        "prossima settimana",
+        "settimana prossima",
+        "entro tre giorni",
+    ]):
+        return {"type": "controllo", "timing_days": days}
+
+    return None
+
+
+def extract_interventions(text: str, vitals: Optional[dict] = None, reason: Optional[str] = None) -> list[str]:
+    t = (text or "").lower()
+    r = (reason or "").lower()
+    interventions: list[str] = []
+
+    has_any_vital = False
     if vitals:
-        any_vital_present = any(
+        has_any_vital = any(
             vitals.get(k) is not None
-            for k in ["blood_pressure_systolic", "blood_pressure_diastolic", "heart_rate", "temperature", "spo2"]
+            for k in [
+                "blood_pressure_systolic",
+                "blood_pressure_diastolic",
+                "heart_rate",
+                "temperature",
+                "spo2",
+            ]
         )
 
-    if explicit_parametri or any_vital_present:
-        interventions.append("controllo_parametri_vitali")
+    if has_any_vital or any(k in t for k in [
+        "parametri rilevati",
+        "rilevati parametri",
+        "monitoraggio parametri",
+        "controllo parametri",
+        "parametri vitali",
+        "segni vitali",
+        "controlli dei parametri vitali",
+    ]):
+        interventions.append("monitoraggio_parametri_vitali")
 
-    # remove duplicates but keep order
-    seen = set()
-    out = []
-    for x in interventions:
-        if x not in seen:
-            out.append(x)
-            seen.add(x)
-    return out
+    if any(k in t for k in ["medicazione", "cambio medicazione", "medicata", "lesione detersa", "ferita detersa"]):
+        interventions.append("medicazione")
+
+    if any(k in t for k in ["farmaco", "somministrato", "somministrazione", "terapia eseguita", "terapia praticata"]):
+        interventions.append("somministrazione_farmaco")
+
+    if any(k in t for k in ["terapia", "aderenza terapeutica", "istruita", "educazione terapeutica", "assunzione farmaci"]):
+        interventions.append("educazione_terapeutica")
+
+    if any(k in t for k in ["catetere", "vescicale", "sacca urine", "lavaggio catetere"]):
+        interventions.append("gestione_catetere")
+
+    if any(k in t for k in ["stomia", "presidio stomale", "sacca stomia", "placca stomia"]):
+        interventions.append("gestione_stomia")
+
+    if any(k in t for k in ["ossigenoterapia", "o2 terapia", "ossigeno terapia"]):
+        interventions.append("gestione_ossigenoterapia")
+
+    if any(k in t for k in ["glicemia", "glucosio capillare"]):
+        interventions.append("monitoraggio_glicemia")
+
+    if any(k in t for k in ["educato caregiver", "istruito caregiver", "caregiver istruito", "fornite indicazioni", "forniti consigli"]):
+        interventions.append("educazione_terapeutica")
+
+    if any(k in t for k in ["valutazione generale", "rivalutazione", "obiettività", "esame obiettivo", "controllo generale"]) or not interventions:
+        interventions.append("valutazione_generale")
+
+    if "lesione" in r or "ferita" in r:
+        interventions.append("medicazione")
+    if "catetere" in r:
+        interventions.append("gestione_catetere")
+    if "stomia" in r:
+        interventions.append("gestione_stomia")
+    if "terapia" in r or "farmaco" in r:
+        interventions.append("somministrazione_farmaco")
+    if "parametri" in r or "segni vitali" in r:
+        interventions.append("monitoraggio_parametri_vitali")
+    if "ossigenoterapia" in r or "respiratorio" in r:
+        interventions.append("gestione_ossigenoterapia")
+
+    return list(dict.fromkeys(interventions))

@@ -2,22 +2,28 @@
 __pycache__/
 *.pyc
 *.pyo
+*.pyd
 
-# Mac
+# Virtual environments
+.venv/
+venv/
+env/
+
+# macOS
 .DS_Store
 
-# Environment
-.env
-.venv
+# Editor
+.vscode/
 
-# Python testing
-.pytest_cache/
-
-# Jupyter
-.ipynb_checkpoints
-
-# System files
+# Logs
 *.log
 
-# Zip files
-*.zip
+# Generated / local runtime files
+uploads/
+reports/
+data/audio_recordings/
+data/synthetic/pred/
+validation_report.csv
+
+# Cache / checkpoints
+.ipynb_checkpoints/

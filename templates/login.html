@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login - ADI Assistant</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="auth-body">
+  <div class="auth-layout">
+    <section class="auth-panel">
+      <div>
+        <div class="logo-wrap">
+          <div class="logo-badge">AI</div>
+          <div>
+            <h1 class="logo-title">ADI Assistant</h1>
+            <p class="logo-subtitle">Clinical Dictation Structurer</p>
+          </div>
+        </div>
+
+        <div class="auth-copy">
+          <p class="eyebrow light">Welcome</p>
+          <h2>Structured clinical drafting, made simpler.</h2>
+          <p>
+            Record a home-care dictation or type a note manually, then transform it into a structured ADI visit draft.
+          </p>
+        </div>
+      </div>
+
+      <div class="auth-note">
+        <strong>Workflow</strong>
+        <p>Voice or text input → transcript processing → clinical extraction → structured report.</p>
+      </div>
+    </section>
+
+    <section class="auth-form-side">
+      <div class="auth-card">
+        <p class="eyebrow">Sign in</p>
+        <h2>Welcome back</h2>
+        <p class="auth-subtext">Access the clinical voice-to-report assistant.</p>
+
+        <form class="auth-form" onsubmit="event.preventDefault(); window.location.href='/assistant';">
+          <div class="field-group">
+            <label>Email</label>
+            <input type="email" placeholder="Enter your email" required>
+          </div>
+
+          <div class="field-group">
+            <label>Password</label>
+            <input type="password" placeholder="Enter your password" required>
+          </div>
+
+          <button type="submit" class="primary-btn auth-main-btn">Login</button>
+        </form>
+
+        <p class="auth-footer">
+          Don’t have an account?
+          <a href="/register">Register</a>
+        </p>
+      </div>
+    </section>
+  </div>
+</body>
+</html>

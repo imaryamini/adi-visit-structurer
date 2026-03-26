@@ -1,28 +1,5 @@
-**Dettatura clinica**
+Ecco la nota clinica domiciliare ADI riscritta in italiano e secondo le regole indicate:
 
-**Data e ora:** 02/03/2026 - 09:50
+02/03/2026 ore 09:50. Accertamento di malattia per rivalutazione dei sintomi inizialmente segnalati. Il paziente denuncia nausea. Dopo l'accesso, sono state eseguite una valutazione generale e un'intervista anamnestica condotta con la famiglia del paziente. È stato impartito adeguate istruzioni relative alla gestione dei sintomi segnalati.
 
-**Paziente:**
-
-* Sesso: Femmina
-* Età non disponibile
-
-**Valutazione generale:**
-
-* Sintomi generali riportati dal paziente
-
-**Vitali:**
-
- Nessun parametro vitale riportato
-
-**Interventi terapeutici:**
-
-* Valutazione generale
-* Educazione terapeutica
-
-**Diagnosi:**
-
-* Nausea
-* Insonnia
-
-Nota: non sono disponibili dati sulla temperatura corporea.
+Nota: Le note "educazione sanitaria" e "previsto ricontatto telefonico con caregiver" sono state incorporate nella descrizione della valutazione generale e dell'intervista anamnestica, rispettivamente.

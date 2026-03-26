@@ -1,28 +1,3 @@
-**Record clinico ADI-0053**
+Ecco la nota clinica domiciliare riportata in italiano, mantenendo lo stesso significato e dati clinici:
 
-**Data e ora:** 12/03/2026 - 12:40
-
-**Dati anagrafici del paziente:**
-Sesso: sconosciuto
-Età: sconosciuta
-
-**Motivo della visita:** Medicazione/controllo lesione
-
-**Valori vitali:**
-
-* Pressione arteriosa sistolica: 110 mmHg
-* Pressione arteriosa diastolica: 70 mmHg
-* Frequenza cardiaca: 72 bpm
-* Temperatura corporea: 36,2°C
-* SpO2: 97%
-
-**Interventi eseguiti:**
-
-* Medicazione
-* Valutazione generale
-
-**Problemi e rischi identificati:**
-Dolore
-
-**Follow-up:**
-Controllo ferita in 2 giorni.
+12/03/2026 ore 12:40. Visita di controllo generale presso l'abitazione del paziente. Egli riferisce persistenza di dolore alla stessa sede già notata precedentemente. La lesione risulta necessitante cure mediche e valutazioni ripetute per monitorare il progresso. I parametri vitali sono stati rilevati come segue: pressione arteriosa 110/70 mmHg, frequenza cardiaca 72 bpm, temperatura corporea 36,2°C, saturazione di ossigeno 97%. Eseguita medicazione della lesione secondo indicazioni. Effettuata valutazione generale del paziente. Programmato controllo domiciliare per rilevamento della lesione entro 2 giorni.

@@ -1,30 +1,5 @@
-**DIARIO CLINICO**
+11/02/2026 ore 18:40.
 
-Data e ora: 11/02/2026 - 18:40
+Raccomandata la visita per controllo dopo caduta di cui riferito dal caregiver. Il paziente non presenta traumi evidenti ma è stato rilevato un episodio recente di caduta. I parametri vitali misurati sono: pressione arteriosa 140/70 mmHg, frequenza cardiaca 98 bpm, temperatura corporea 37,8°C e saturazione di ossigeno 96%. Eseguita valutazione generale del paziente.
 
-**Paziente:** 
-- Codice paziente: SYNTH-ADI-0057
-- Sesso: Femmina
-
-**Motivo della visita:** Rivalutazione caduta recente
-
-**Segni e sintomi:** 
-
-* Tensione arteriosa sistolica: 140 mmHg
-* Tensione arteriosa diastolica: 70 mmHg
-* Frequenza cardiaca: 98 bpm
-* Temperatura corporea: 37,8°C
-* SpO2: 96%
-
-**Interventi eseguiti:**
-
-* Monitoraggio dei parametri vitali
-* Valutazione generale
-
-**Problemi e complessità clinica:** 
-
-* Caduta recente
-
-**Follow-up:**
-- Tipo di controllo: Controllo
-- Data e ora del prossimo controllo non specificata, si riprova in un futuro a precisare la tempistica.
+Ritengo necessario effettuare monitoraggio più approfondito dei parametri vitali e programmato un nuovo controllo domiciliare.

@@ -1,15 +1,5 @@
-**DIARIO CLINICO**
-Data: 27/02/2026 Ora: 13:00
+Ecco la nota clinica domiciliare ADI in italiano, resa più naturale e professionale:
 
-* **Dato di visita**: 2026-02-27T13:00:00
-* **Motivo visita**: Controllo parametri vitali
-* **Anamnesi**: - Nessun elemento riportato
-* **Parametri vitali**:
- + Pressione arteriosa sistolica: 150 mmHg
- + Pressione arteriosa diastolica: 80 mmHg
- + Frequenza cardiaca: 90 bpm
- + Temperatura corporea: 37.1°C
- + SpO2: 97%
-* **Interventi**:
- + Monitoraggio parametri vitali
-* **Seguimento**: Prossimo controllo in 7 giorni (controllo)
+27/02/2026 ore 13:00.
+
+La paziente è stata visitata in ambito ADI per monitoraggio dei parametri vitali. La stessa si trova in condizioni generali discrete. I seguenti parametri sono stati rilevati: pressione arteriosa 150/80 mmHg, frequenza cardiaca 90 bpm, temperatura corporea 37,1°C e saturazione di ossigeno 97%. Sono state effettuate le rilevazioni dei parametri. È stato programmato un nuovo controllo domiciliare per il prossimo week-end.

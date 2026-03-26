@@ -1,40 +1,11 @@
-**Record Clinico**
+Ecco la nota clinica riscritta in italiano e stilizzata per una cartella domiciliare:
 
-**Data e ora**: 26/02/2026, ore 13:20
+26/02/2026 ore 13:20. Accesso domiciliare di controllo generale per valutazione del paziente con persistenza di dolore nella sede della lesione da rivalutare.
 
-**Paziente**
+I parametri clinici rilevati sono: pressione arteriosa 130/80 mmHg, frequenza cardiaca 72 bpm, temperatura corporea 36,5°C e saturazione dell'ossigeno 96%.
 
-* Età: 82 anni
-* Sesso: sconosciuto
+Eseguita la medicazione della lesione secondo indicazioni terapeutiche. Valutata anche la generalità del paziente.
 
-**Vitali**
+Il controllo della lesione è programmato per entro 2 giorni.
 
-* Pressione arteriosa sistolica: 130 mmHg
-* Pressione arteriosa diastolica: 80 mmHg
-* Frequenza cardiaca: 72 bpm
-* Temperatura corporea: 36,5°C
-* SpO2: 96%
-
-**Motivo visita**: medicazione/controllo lesione
-
-**Anamnesi**
-
- Nessuna informazione disponibile
-
-**Interventi eseguiti**
-
-* Medicazione
-* Valutazione generale
-
-**Problemi normalizzati**
-
-* Dolore
-
-**Condizioni critiche**
-
- Nessuna condizione critica segnalata
-
-**Follow-up**
-
-* Tipo: controllo ferita
-* Ritorno nel tempo: 2 giorni
+Nota: ho mantenuto i dati clinici originali e stilizzato la nota in un linguaggio tipico ADI/infermieristico, senza aggiungere titoli o elenchi.
