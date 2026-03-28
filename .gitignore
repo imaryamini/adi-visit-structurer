@@ -1,29 +1,71 @@
+# ========================
 # Python
+# ========================
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
+*.py[cod]
+*$py.class
 
-# Virtual environments
+# Virtual environment
 .venv/
 venv/
 env/
 
-# macOS
-.DS_Store
+# ========================
+# Flask
+# ========================
+instance/
+*.sqlite3
+*.db
 
-# Editor
-.vscode/
+# ========================
+# Env files
+# ========================
+.env
+.env.*
 
+# ========================
 # Logs
+# ========================
 *.log
 
-# Generated / local runtime files
-uploads/
-reports/
-data/audio_recordings/
-data/synthetic/pred/
-validation_report.csv
+# ========================
+# macOS
+# ========================
+.DS_Store
 
-# Cache / checkpoints
-.ipynb_checkpoints/
+# ========================
+# VS Code
+# ========================
+.vscode/
+
+# ========================
+# Uploads (IMPORTANT)
+# ========================
+uploads/
+*.webm
+*.wav
+*.mp3
+
+# ========================
+# Tests
+# ========================
+.pytest_cache/
+.coverage
+
+# ========================
+# Build
+# ========================
+build/
+dist/
+*.egg-info/
+
+# ========================
+# Models
+# ========================
+*.gguf
+
+# ========================
+# Misc
+# ========================
+*.tmp
+*.bak

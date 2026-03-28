@@ -15,13 +15,8 @@ const menuItems = document.querySelectorAll(".menu-item");
 const views = document.querySelectorAll(".view");
 
 function switchView(viewId) {
-  views.forEach(view => {
-    view.classList.remove("active-view");
-  });
-
-  menuItems.forEach(item => {
-    item.classList.remove("active");
-  });
+  views.forEach(view => view.classList.remove("active-view"));
+  menuItems.forEach(item => item.classList.remove("active"));
 
   const selectedView = document.getElementById(viewId);
   const selectedButton = document.querySelector(`.menu-item[data-view="${viewId}"]`);
@@ -55,17 +50,11 @@ function renderList(items, emptyText = "No items detected") {
 }
 
 function renderVitals(vitals = {}) {
-  const sys = vitals.blood_pressure_systolic;
-  const dia = vitals.blood_pressure_diastolic;
-  const bp = (sys !== null && sys !== undefined && dia !== null && dia !== undefined)
-    ? `${sys}/${dia}`
-    : "Not detected";
-
   return `
     <div class="vitals-grid">
       <div class="vital-item">
         <span class="vital-label">Blood Pressure</span>
-        <div class="vital-value">${bp}</div>
+        <div class="vital-value">${safeValue(vitals.blood_pressure)}</div>
       </div>
       <div class="vital-item">
         <span class="vital-label">Heart Rate</span>
@@ -86,7 +75,6 @@ function renderVitals(vitals = {}) {
 function renderStructuredCards(result) {
   const clinical = result?.clinical || {};
   const quality = result?.quality || {};
-  const coding = result?.coding || {};
   const meta = result?.meta || {};
 
   const warnings = quality.warnings || [];
@@ -122,6 +110,11 @@ function renderStructuredCards(result) {
       </div>
 
       <div class="info-card span-2">
+        <span class="label">Anamnesis Brief</span>
+        <div class="value ${clinical.anamnesis_brief ? "" : "muted"}">${safeValue(clinical.anamnesis_brief)}</div>
+      </div>
+
+      <div class="info-card span-2">
         <span class="label">Vitals</span>
         ${renderVitals(clinical.vitals || {})}
       </div>
@@ -136,12 +129,7 @@ function renderStructuredCards(result) {
         ${renderList(clinical.critical_issues, "No critical issues detected")}
       </div>
 
-      <div class="info-card">
-        <span class="label">Normalized Problems</span>
-        ${renderList(coding.problems_normalized, "No normalized problems detected")}
-      </div>
-
-      <div class="info-card">
+      <div class="info-card span-2">
         <span class="label">Quality Checks</span>
         ${
           warnings.length === 0 && missing.length === 0
@@ -175,10 +163,6 @@ function setLoadingState(message) {
 
 function showReportView() {
   switchView("reportView");
-}
-
-function showJsonView() {
-  switchView("jsonView");
 }
 
 async function startRecording() {
