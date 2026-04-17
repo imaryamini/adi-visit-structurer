@@ -1,62 +1,70 @@
+# src/voice_input.py
+
 from pathlib import Path
+import whisper
 
-# Supported audio formats (INCLUDING webm from browser)
-AUDIO_EXTENSIONS = {".wav", ".mp3", ".m4a", ".mp4", ".mpeg", ".webm"}
+# ---------------------------
+# CONFIG
+# ---------------------------
+
+# OPTIONS:
+# "base"  -> fast (recommended)
+# "small" -> more accurate (slower)
+MODEL_NAME = "base"
+
+# ---------------------------
+# LOAD MODEL ONCE
+# ---------------------------
+
+try:
+    model = whisper.load_model(MODEL_NAME)
+    print(f"[Whisper] Model loaded: {MODEL_NAME}")
+except Exception as e:
+    raise RuntimeError(f"Failed to load Whisper model: {e}")
 
 
-def transcribe_audio(audio_path: str, model_size: str = "base") -> str:
+# ---------------------------
+# TRANSCRIPTION FUNCTION
+# ---------------------------
+
+def transcribe_audio(audio_path: str) -> str:
     """
-    Transcribe an audio file into text using faster-whisper.
-    Supports browser recordings (.webm) and standard formats.
+    Transcribe audio using Whisper.
+
+    Features:
+    - Automatic language detection (Italian + English)
+    - Optimized for clinical dictation
+    - Fast + stable for demo
     """
 
-    try:
-        from faster_whisper import WhisperModel
-    except ImportError as e:
-        raise ImportError(
-            "faster-whisper is not installed.\n"
-            "Run: python3 -m pip install faster-whisper"
-        ) from e
+    audio_path = Path(audio_path)
 
-    path = Path(audio_path)
-
-    # Check file exists
-    if not path.exists():
+    if not audio_path.exists():
         raise FileNotFoundError(f"Audio file not found: {audio_path}")
 
-    # Check format
-    if path.suffix.lower() not in AUDIO_EXTENSIONS:
-        raise ValueError(
-            f"Unsupported audio format: {path.suffix}. "
-            f"Use one of: {', '.join(sorted(AUDIO_EXTENSIONS))}"
+    try:
+        result = model.transcribe(
+            str(audio_path),
+            task="transcribe",  # NO translation
+            initial_prompt=(
+                "Trascrizione di una visita medica domiciliare ADI. "
+                "Include parametri vitali come pressione, frequenza cardiaca, saturazione, temperatura."
+            ),
+            fp16=False,  # safe for CPU (Mac)
+            verbose=False
         )
 
-    # Load Whisper model
-    model = WhisperModel(model_size, compute_type="int8")
+        text = result.get("text", "").strip()
+        language = result.get("language", "unknown")
 
-    # IMPORTANT: force Italian (since your project is ADI Italy)
-    segments, _ = model.transcribe(str(path), language="it")
+        # Debug log (keep for demo, can remove later)
+        print(f"[Whisper] Language detected: {language}")
+        print(f"[Whisper] Transcript: {text}")
 
-    # Combine segments
-    text_parts = []
-    for segment in segments:
-        if segment.text:
-            cleaned = segment.text.strip()
-            if cleaned:
-                text_parts.append(cleaned)
+        if not text:
+            return "No speech detected."
 
-    text = " ".join(text_parts).strip()
+        return text
 
-    if not text:
-        raise ValueError("Transcription returned empty text.")
-
-    return text
-
-
-# Optional test (you can ignore this)
-if __name__ == "__main__":
-    sample = "sample.wav"
-    if Path(sample).exists():
-        print(transcribe_audio(sample))
-    else:
-        print("Put a sample audio file to test.")
+    except Exception as e:
+        raise RuntimeError(f"Transcription failed: {e}")
