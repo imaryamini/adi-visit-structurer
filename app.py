@@ -18,8 +18,19 @@ app = Flask(__name__)
 UPLOAD_DIR = Path("uploads")
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
-OLLAMA_MODEL = "llama3.1:8b"
+# ---------------------------
+# Fast config
+# ---------------------------
+
+# Faster than llama3.1:8b for local demo
+OLLAMA_MODEL = "mistral"
 OLLAMA_URL = "http://localhost:11434/api/generate"
+
+# If True => no LLM at all (fastest possible)
+RULE_ONLY_MODE = False
+
+# If True => call LLM only when rule-based extraction is incomplete
+SMART_LLM_MODE = True
 
 
 def _safe_str(value: Any) -> Optional[str]:
@@ -49,6 +60,7 @@ def _extract_json_object(text: str) -> Dict[str, Any]:
         return {}
 
     candidate = match.group(0)
+
     try:
         obj = json.loads(candidate)
         if isinstance(obj, dict):
@@ -142,11 +154,7 @@ def infer_reason_for_visit(text: str) -> Optional[str]:
     ]
 
     for keywords, label, mode in reason_rules:
-        if mode == "all":
-            matched = all(k in t for k in keywords)
-        else:
-            matched = any(k in t for k in keywords)
-
+        matched = all(k in t for k in keywords) if mode == "all" else any(k in t for k in keywords)
         if matched:
             return normalize_reason(label)
 
@@ -237,20 +245,16 @@ def infer_critical_issues(text: str, spo2: Optional[str] = None) -> List[str]:
 
 def call_llm_extract(text: str) -> Dict[str, Any]:
     prompt = f"""
-You are a clinical assistant specialized in ADI (Assistenza Domiciliare Integrata).
+Extract structured ADI clinical information from this note.
 
-Your task is to extract structured medical information from a home-care visit note.
+Return ONLY valid JSON.
+No explanation.
+No markdown.
+No code fences.
+Be concise.
+If missing, use null.
 
-IMPORTANT RULES:
-- Return ONLY valid JSON
-- No explanation
-- No markdown
-- No code fences
-- Use concise clinical wording
-- If information is missing, use null
-- Do not invent data
-
-Return exactly this JSON schema:
+Schema:
 {{
   "reason_for_visit": null,
   "anamnesis_brief": null,
@@ -265,26 +269,7 @@ Return exactly this JSON schema:
   "critical_issues": []
 }}
 
-EXTRACTION RULES:
-- reason_for_visit: MUST be extracted even if implicit.
-  Look for symptoms, complaints, or purpose of visit.
-  Examples:
-  - "dolore toracico"
-  - "controllo parametri"
-  - "valutazione generale"
-  - "medicazione e controllo lesione"
-  - "controllo post-caduta"
-  If nothing is clearly stated, infer the most likely reason from context.
-- anamnesis_brief: short summary of symptoms or clinical context
-- vitals.blood_pressure: format like "120/80" if present
-- vitals.heart_rate: numeric value if present
-- vitals.temperature: value if present
-- vitals.spo2: oxygen saturation if present
-- follow_up: next step, next visit, monitoring plan, or reassessment if mentioned
-- interventions: list of actions performed
-- critical_issues: be conservative and include only if supported by clear evidence
-
-Visit note:
+Clinical note:
 {text}
 """.strip()
 
@@ -297,10 +282,10 @@ Visit note:
                 "stream": False,
                 "options": {
                     "temperature": 0,
-                    "num_predict": 300,
+                    "num_predict": 120,
                 },
             },
-            timeout=120,
+            timeout=30,
         )
         response.raise_for_status()
         data = response.json()
@@ -338,47 +323,75 @@ Visit note:
 
 
 # ---------------------------
-# Hybrid merge
+# Fast hybrid merge
 # ---------------------------
 
-def hybrid_extract(text: str) -> Dict[str, Any]:
-    llm = call_llm_extract(text)
-    llm_vitals = llm.get("vitals", {}) if isinstance(llm, dict) else {}
+def should_call_llm(rule_result: Dict[str, Any]) -> bool:
+    if RULE_ONLY_MODE:
+        return False
 
+    if not SMART_LLM_MODE:
+        return True
+
+    vitals = rule_result.get("vitals", {}) or {}
+
+    # If we already have a solid result, skip LLM for speed
+    enough_vitals = sum(1 for v in vitals.values() if v) >= 2
+    has_reason = bool(rule_result.get("reason_for_visit"))
+    has_interventions = len(rule_result.get("interventions", [])) > 0
+
+    # Call LLM only when result is weak/incomplete
+    return not (has_reason and enough_vitals and has_interventions)
+
+
+def hybrid_extract(text: str) -> Dict[str, Any]:
     bp_rule = extract_blood_pressure(text)
     hr_rule = extract_heart_rate(text)
     temp_rule = extract_temperature(text)
     spo2_rule = extract_spo2(text)
 
-    vitals = {
-        "blood_pressure": bp_rule or llm_vitals.get("blood_pressure"),
-        "heart_rate": hr_rule or llm_vitals.get("heart_rate"),
-        "temperature": temp_rule or llm_vitals.get("temperature"),
-        "spo2": spo2_rule or llm_vitals.get("spo2"),
-    }
-
     reason_rule = infer_reason_for_visit(text)
     follow_rule = infer_follow_up(text)
     interventions_rule = infer_interventions(text)
+    problems = normalize_problems(text)
 
-    reason = llm.get("reason_for_visit")
-    if not reason:
-        reason = reason_rule
-    if not reason:
-        reason = "valutazione generale"
-    reason = normalize_reason(reason)
+    rule_result = {
+        "reason_for_visit": reason_rule or "valutazione generale",
+        "anamnesis_brief": None,
+        "vitals": {
+            "blood_pressure": bp_rule,
+            "heart_rate": hr_rule,
+            "temperature": temp_rule,
+            "spo2": spo2_rule,
+        },
+        "follow_up": follow_rule or "monitoraggio clinico secondo indicazioni",
+        "interventions": interventions_rule,
+        "critical_issues": infer_critical_issues(text, spo2_rule),
+        "problems_normalized": problems,
+        "_llm_error": None,
+    }
+
+    if not should_call_llm(rule_result):
+        return rule_result
+
+    llm = call_llm_extract(text)
+    llm_vitals = llm.get("vitals", {}) if isinstance(llm, dict) else {}
+
+    vitals = {
+        "blood_pressure": rule_result["vitals"]["blood_pressure"] or llm_vitals.get("blood_pressure"),
+        "heart_rate": rule_result["vitals"]["heart_rate"] or llm_vitals.get("heart_rate"),
+        "temperature": rule_result["vitals"]["temperature"] or llm_vitals.get("temperature"),
+        "spo2": rule_result["vitals"]["spo2"] or llm_vitals.get("spo2"),
+    }
+
+    reason = llm.get("reason_for_visit") or rule_result["reason_for_visit"]
+    reason = normalize_reason(reason or "valutazione generale")
 
     anamnesis = llm.get("anamnesis_brief")
+    follow_up = llm.get("follow_up") or rule_result["follow_up"]
 
-    follow_up = llm.get("follow_up") or follow_rule
-    if not follow_up:
-        follow_up = "monitoraggio clinico secondo indicazioni"
-
-    interventions = llm.get("interventions", []) or []
-    interventions = normalize_interventions(interventions + interventions_rule)
-
-    critical_issues = infer_critical_issues(text, vitals.get("spo2"))
-    problems = normalize_problems(text)
+    interventions = normalize_interventions((llm.get("interventions", []) or []) + rule_result["interventions"])
+    critical_issues = rule_result["critical_issues"] or llm.get("critical_issues", []) or []
 
     return {
         "reason_for_visit": reason,
@@ -421,8 +434,8 @@ def build_output(extracted: Dict[str, Any]) -> Dict[str, Any]:
         "meta": {
             "visit_datetime": datetime.now().isoformat(timespec="seconds"),
             "operator_role": "infermiere",
-            "model": OLLAMA_MODEL,
-            "extraction_mode": "hybrid",
+            "model": OLLAMA_MODEL if not RULE_ONLY_MODE else "rule-based only",
+            "extraction_mode": "fast-hybrid" if not RULE_ONLY_MODE else "rule-only",
         },
         "clinical": {
             "reason_for_visit": extracted.get("reason_for_visit"),

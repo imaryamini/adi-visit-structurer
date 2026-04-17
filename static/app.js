@@ -259,7 +259,7 @@ async function stopRecording() {
   mediaRecorder.stop();
 
   mediaRecorder.onstop = async () => {
-    recordingStatus.textContent = "Processing audio...";
+    recordingStatus.textContent = "Uploading audio...";
     startBtn.disabled = false;
     stopBtn.disabled = true;
 
@@ -267,7 +267,8 @@ async function stopRecording() {
     const formData = new FormData();
     formData.append("audio", blob, "recording.webm");
 
-    setLoadingState("Processing recorded audio...");
+    transcriptBox.textContent = "Audio received. Starting transcription...";
+    setLoadingState("Transcribing audio and extracting structured data...");
     showReportView();
 
     try {
@@ -307,7 +308,8 @@ async function processText() {
     return;
   }
 
-  setLoadingState("Processing typed dictation...");
+  transcriptBox.textContent = "Text received. Starting extraction...";
+  setLoadingState("Processing typed note...");
   showReportView();
 
   try {
