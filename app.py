@@ -12,24 +12,21 @@ from flask import Flask, jsonify, render_template, request
 from src.voice_input import transcribe_audio
 from src.run_pipeline import PREPROCESS
 from src.normalize import normalize_interventions, normalize_problems, normalize_reason
+from src.italian_numbers import italian_word_to_number, extract_number_from_text
 
 app = Flask(__name__)
 
 UPLOAD_DIR = Path("uploads")
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
-# ---------------------------
-# Fast config
-# ---------------------------
-
-# Faster than llama3.1:8b for local demo
+# Faster local model
 OLLAMA_MODEL = "mistral"
 OLLAMA_URL = "http://localhost:11434/api/generate"
 
-# If True => no LLM at all (fastest possible)
+# If True => no LLM at all
 RULE_ONLY_MODE = False
 
-# If True => call LLM only when rule-based extraction is incomplete
+# If True => call LLM only when rule-based result is weak
 SMART_LLM_MODE = True
 
 
@@ -71,44 +68,114 @@ def _extract_json_object(text: str) -> Dict[str, Any]:
     return {}
 
 
+def _normalize_text(text: str) -> str:
+    text = text.lower()
+    text = text.replace("é", "e").replace("è", "e")
+    text = re.sub(r"[^\w\s/%.-]", " ", text)
+    text = re.sub(r"\s+", " ", text).strip()
+    return text
+
+
 # ---------------------------
 # Rule-based extraction
 # ---------------------------
 
 def extract_blood_pressure(text: str) -> Optional[str]:
-    m = re.search(r"\b(\d{2,3})\s*[/\-]\s*(\d{2,3})\b", text)
+    t = _normalize_text(text)
+
+    # 1) classic numeric format: 130/80 or 130-80
+    m = re.search(r"\b(\d{2,3})\s*[/\-]\s*(\d{2,3})\b", t)
     if m:
         sys_val = int(m.group(1))
         dia_val = int(m.group(2))
         if 70 <= sys_val <= 260 and 30 <= dia_val <= 150 and sys_val > dia_val:
             return f"{sys_val}/{dia_val}"
+
+    # 2) speech-like numeric format: 130 su 80
+    m = re.search(r"\b(\d{2,3})\s+su\s+(\d{2,3})\b", t)
+    if m:
+        sys_val = int(m.group(1))
+        dia_val = int(m.group(2))
+        if 70 <= sys_val <= 260 and 30 <= dia_val <= 150 and sys_val > dia_val:
+            return f"{sys_val}/{dia_val}"
+
+    # 3) spoken Italian words near "pressione"
+    # examples:
+    # "pressione centotrenta su ottanta"
+    # "pressione cento trenta su ottanta"
+    pressure_patterns = [
+        r"pressione(?:\s+arteriosa)?\s+([a-z]+(?:\s+[a-z]+)?)\s+su\s+([a-z]+(?:\s+[a-z]+)?)",
+        r"pa\s+([a-z]+(?:\s+[a-z]+)?)\s+su\s+([a-z]+(?:\s+[a-z]+)?)",
+    ]
+
+    for pat in pressure_patterns:
+        m = re.search(pat, t)
+        if m:
+            left_raw = m.group(1).strip()
+            right_raw = m.group(2).strip()
+
+            sys_val = italian_word_to_number(left_raw.replace(" ", ""))
+            if sys_val is None:
+                sys_val = extract_number_from_text(left_raw, 70, 260)
+
+            dia_val = italian_word_to_number(right_raw.replace(" ", ""))
+            if dia_val is None:
+                dia_val = extract_number_from_text(right_raw, 30, 150)
+
+            if sys_val is not None and dia_val is not None:
+                if 70 <= sys_val <= 260 and 30 <= dia_val <= 150 and sys_val > dia_val:
+                    return f"{sys_val}/{dia_val}"
+
     return None
 
 
 def extract_heart_rate(text: str) -> Optional[str]:
+    t = _normalize_text(text)
+
+    # digits
     patterns = [
         r"\bfc\s*[:=]?\s*(\d{2,3})\b",
         r"\bfrequenza\s*cardiaca\s*[:=]?\s*(\d{2,3})\b",
         r"\bhr\s*[:=]?\s*(\d{2,3})\b",
         r"\b(\d{2,3})\s*bpm\b",
+        r"\b(\d{2,3})\s*battiti(?:\s+al\s+minuto)?\b",
     ]
     for pat in patterns:
-        m = re.search(pat, text, flags=re.IGNORECASE)
+        m = re.search(pat, t, flags=re.IGNORECASE)
         if m:
             val = int(m.group(1))
             if 30 <= val <= 220:
                 return str(val)
+
+    # spoken Italian words
+    spoken_patterns = [
+        r"frequenza\s+cardiaca\s+([a-z]+(?:\s+[a-z]+)?)",
+        r"fc\s+([a-z]+(?:\s+[a-z]+)?)",
+        r"([a-z]+(?:\s+[a-z]+)?)\s+battiti(?:\s+al\s+minuto)?",
+    ]
+    for pat in spoken_patterns:
+        m = re.search(pat, t, flags=re.IGNORECASE)
+        if m:
+            raw = m.group(1).strip()
+            val = italian_word_to_number(raw.replace(" ", ""))
+            if val is None:
+                val = extract_number_from_text(raw, 30, 220)
+            if val is not None and 30 <= val <= 220:
+                return str(val)
+
     return None
 
 
 def extract_temperature(text: str) -> Optional[str]:
+    t = _normalize_text(text)
+
     patterns = [
         r"\btemp(?:eratura)?\s*[:=]?\s*(\d{2}[.,]\d)\b",
         r"\b(\d{2}[.,]\d)\s*°\s*c\b",
         r"\b(\d{2}[.,]\d)\s*°c\b",
     ]
     for pat in patterns:
-        m = re.search(pat, text, flags=re.IGNORECASE)
+        m = re.search(pat, t, flags=re.IGNORECASE)
         if m:
             value = m.group(1).replace(",", ".")
             try:
@@ -117,26 +184,47 @@ def extract_temperature(text: str) -> Optional[str]:
                     return value
             except ValueError:
                 pass
+
     return None
 
 
 def extract_spo2(text: str) -> Optional[str]:
+    t = _normalize_text(text)
+
+    # digits
     patterns = [
         r"\bspo2\s*[:=]?\s*(\d{2,3})\s*%?\b",
         r"\bsaturazione\s*[:=]?\s*(\d{2,3})\s*%?\b",
         r"\bsat\.?\s*[:=]?\s*(\d{2,3})\s*%?\b",
     ]
     for pat in patterns:
-        m = re.search(pat, text, flags=re.IGNORECASE)
+        m = re.search(pat, t, flags=re.IGNORECASE)
         if m:
             val = int(m.group(1))
             if 50 <= val <= 100:
                 return str(val)
+
+    # spoken Italian words
+    spoken_patterns = [
+        r"spo2\s+([a-z]+(?:\s+[a-z]+)?)",
+        r"saturazione\s+([a-z]+(?:\s+[a-z]+)?)",
+        r"sat\.?\s+([a-z]+(?:\s+[a-z]+)?)",
+    ]
+    for pat in spoken_patterns:
+        m = re.search(pat, t, flags=re.IGNORECASE)
+        if m:
+            raw = m.group(1).strip()
+            val = italian_word_to_number(raw.replace(" ", ""))
+            if val is None:
+                val = extract_number_from_text(raw, 50, 100)
+            if val is not None and 50 <= val <= 100:
+                return str(val)
+
     return None
 
 
 def infer_reason_for_visit(text: str) -> Optional[str]:
-    t = text.lower()
+    t = _normalize_text(text)
 
     reason_rules = [
         (["tosse", "febbre", "dispnea"], "tosse, febbre e lieve dispnea", "all"),
@@ -162,7 +250,7 @@ def infer_reason_for_visit(text: str) -> Optional[str]:
 
 
 def infer_follow_up(text: str) -> Optional[str]:
-    t = text.lower()
+    t = _normalize_text(text)
 
     patterns = [
         r"(follow[- ]?up\s+tra\s+\d+\s+\w+)",
@@ -186,10 +274,10 @@ def infer_follow_up(text: str) -> Optional[str]:
 
 
 def infer_interventions(text: str) -> List[str]:
-    t = text.lower()
+    t = _normalize_text(text)
     out: List[str] = []
 
-    if any(k in t for k in ["valutazione generale", "valutazione clinica", "eseguita valutazione", "valutato"]):
+    if any(k in t for k in ["valutazione generale", "valutazione clinica", "eseguita valutazione", "valutato", "ho fatto una valutazione generale"]):
         out.append("valutazione generale")
 
     if any(k in t for k in ["medicazione", "ferita", "lesione", "ulcera", "piaga"]):
@@ -205,7 +293,7 @@ def infer_interventions(text: str) -> List[str]:
 
 
 def infer_critical_issues(text: str, spo2: Optional[str] = None) -> List[str]:
-    t = text.lower()
+    t = _normalize_text(text)
     issues: List[str] = []
 
     has_dyspnea = any(k in t for k in ["dispnea", "affanno"])
@@ -218,7 +306,7 @@ def infer_critical_issues(text: str, spo2: Optional[str] = None) -> List[str]:
             spo2_val = None
 
     if spo2_val is not None and spo2_val < 92:
-        issues.append("possibile instabilità respiratoria")
+        issues.append("possibile instabilita respiratoria")
 
     tachy_patterns = [
         r"\bfc\s*[:=]?\s*(1[1-9]\d|200)\b",
@@ -229,9 +317,9 @@ def infer_critical_issues(text: str, spo2: Optional[str] = None) -> List[str]:
     has_tachy = any(re.search(p, t, flags=re.IGNORECASE) for p in tachy_patterns)
 
     if has_dyspnea and spo2_val is not None and spo2_val < 94:
-        issues.append("possibile instabilità clinica")
+        issues.append("possibile instabilita clinica")
     elif has_dyspnea and has_tachy:
-        issues.append("possibile instabilità clinica")
+        issues.append("possibile instabilita clinica")
 
     if any(k in t for k in ["caduta recente", "recente caduta", "post-caduta", "post caduta", "caduta domestica"]):
         issues.append("caduta recente")
@@ -334,13 +422,10 @@ def should_call_llm(rule_result: Dict[str, Any]) -> bool:
         return True
 
     vitals = rule_result.get("vitals", {}) or {}
-
-    # If we already have a solid result, skip LLM for speed
     enough_vitals = sum(1 for v in vitals.values() if v) >= 2
     has_reason = bool(rule_result.get("reason_for_visit"))
     has_interventions = len(rule_result.get("interventions", [])) > 0
 
-    # Call LLM only when result is weak/incomplete
     return not (has_reason and enough_vitals and has_interventions)
 
 
@@ -389,7 +474,6 @@ def hybrid_extract(text: str) -> Dict[str, Any]:
 
     anamnesis = llm.get("anamnesis_brief")
     follow_up = llm.get("follow_up") or rule_result["follow_up"]
-
     interventions = normalize_interventions((llm.get("interventions", []) or []) + rule_result["interventions"])
     critical_issues = rule_result["critical_issues"] or llm.get("critical_issues", []) or []
 
