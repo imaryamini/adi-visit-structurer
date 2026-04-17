@@ -1,4 +1,5 @@
 # ADI Assistant
+> Transform clinical home-care notes into structured ADI reports in seconds.
 
 ADI Assistant is a prototype system developed within the context of an internship focused on **ADI (Assistenza Domiciliare Integrata)** clinical documentation.
 
