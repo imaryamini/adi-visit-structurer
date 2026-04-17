@@ -1,114 +1,135 @@
-from difflib import SequenceMatcher
-from src.resources.problem_lexicon import PROBLEM_VOCAB, SYNONYM_MAP
+from __future__ import annotations
 
-FUZZY_THRESHOLD = 0.90
-
-
-def _contains_any(text: str, phrases: list[str]) -> bool:
-    t = (text or "").lower()
-    return any(p in t for p in phrases)
+from typing import Iterable, List, Optional
 
 
-def _partial_ratio(phrase: str, text: str) -> float:
-    phrase = (phrase or "").lower().strip()
-    text = (text or "").lower().strip()
-
-    if not phrase or not text:
-        return 0.0
-
-    if phrase in text:
-        return 1.0
-
-    if len(text) <= len(phrase):
-        return SequenceMatcher(None, phrase, text).ratio()
-
-    best = 0.0
-    window = len(phrase)
-
-    for i in range(0, len(text) - window + 1):
-        chunk = text[i:i + window]
-        score = SequenceMatcher(None, phrase, chunk).ratio()
-        if score > best:
-            best = score
-
-    return best
+def _clean(text: str) -> str:
+    return " ".join((text or "").strip().lower().split())
 
 
-def normalize_problems(text: str) -> list[str]:
-    if not text:
+REASON_MAP = {
+    "dolore toracico": "dolore toracico",
+    "dolore lombare": "dolore lombare",
+    "lombalgia": "dolore lombare",
+    "dolore addominale": "dolore addominale",
+    "dispnea": "dispnea",
+    "affanno": "dispnea",
+    "febbre": "febbre",
+    "controllo parametri": "controllo parametri",
+    "controllo parametri vitali": "controllo parametri",
+    "monitoraggio parametri": "controllo parametri",
+    "monitoraggio parametri vitali": "controllo parametri",
+    "valutazione generale": "valutazione generale",
+    "medicazione": "medicazione e controllo lesione",
+    "controllo lesione": "medicazione e controllo lesione",
+    "medicazione e controllo lesione": "medicazione e controllo lesione",
+    "somministrazione terapia": "controllo terapia e somministrazione farmaco",
+    "somministrazione farmaco": "controllo terapia e somministrazione farmaco",
+    "controllo terapia": "controllo terapia e somministrazione farmaco",
+    "recente caduta domestica": "controllo post-caduta",
+    "caduta recente": "controllo post-caduta",
+    "controllo post-caduta": "controllo post-caduta",
+}
+
+
+INTERVENTION_MAP = {
+    "valutazione generale": "valutazione generale",
+    "valutazione clinica": "valutazione generale",
+    "monitoraggio parametri": "monitoraggio parametri vitali",
+    "monitoraggio parametri vitali": "monitoraggio parametri vitali",
+    "controllo parametri": "monitoraggio parametri vitali",
+    "controllo parametri vitali": "monitoraggio parametri vitali",
+    "somministrazione terapia": "somministrazione farmaco",
+    "somministrazione farmaco": "somministrazione farmaco",
+    "terapia": "somministrazione farmaco",
+    "medicazione": "medicazione",
+    "medicazione lesione": "medicazione",
+    "valutazione dolore": "valutazione generale",
+}
+
+
+PROBLEM_MAP = {
+    "dolore toracico": "dolore_toracico",
+    "dispnea": "dispnea",
+    "febbre": "febbre",
+    "ferita": "lesione_cutanea",
+    "lesione": "lesione_cutanea",
+    "ulcera": "lesione_cutanea",
+    "piaga": "lesione_cutanea",
+    "caduta": "caduta_recente",
+    "caduta recente": "caduta_recente",
+    "lombalgia": "dolore_lombare",
+    "dolore lombare": "dolore_lombare",
+}
+
+
+def _unique_keep_order(items: Iterable[str]) -> List[str]:
+    seen = set()
+    out: List[str] = []
+    for item in items:
+        key = _clean(item)
+        if not key or key in seen:
+            continue
+        seen.add(key)
+        out.append(item)
+    return out
+
+
+def normalize_reason(reason: Optional[str]) -> Optional[str]:
+    if not reason:
+        return None
+    key = _clean(reason)
+    return REASON_MAP.get(key, key)
+
+
+def normalize_interventions(interventions: Optional[Iterable[str]]) -> List[str]:
+    if not interventions:
         return []
 
-    t = text.lower()
-    found = set()
-
-    # exact synonym mapping
-    for phrase, norm in SYNONYM_MAP.items():
-        if phrase in t:
-            found.add(norm)
-
-    # fuzzy synonym mapping
-    for phrase, norm in SYNONYM_MAP.items():
-        if norm in found:
+    normalized: List[str] = []
+    for item in interventions:
+        key = _clean(str(item))
+        if not key:
             continue
-        score = _partial_ratio(phrase, t)
-        if score >= FUZZY_THRESHOLD:
-            found.add(norm)
+        mapped = INTERVENTION_MAP.get(key, key)
+        normalized.append(mapped)
 
-    # safe clinical rules
-    if _contains_any(t, ["dolore", "algia", "nrs", "vas", "dolore cronico", "dolore al ginocchio"]):
-        found.add("dolore_cronico")
+    normalized = _unique_keep_order(normalized)
 
-    if _contains_any(t, ["caduta", "caduto", "scivolato", "post-caduta", "post caduta", "trauma"]):
-        found.add("caduta")
+    # extra conservative merge:
+    # if monitoraggio parametri vitali exists, remove weaker variants
+    final: List[str] = []
+    has_vitals = "monitoraggio parametri vitali" in normalized
+    for item in normalized:
+        if has_vitals and item in {"monitoraggio parametri", "controllo parametri"}:
+            continue
+        final.append(item)
 
-    if _contains_any(t, [
-        "piaga",
-        "ferita",
-        "ulcera",
-        "decubito",
-        "lesione da pressione",
-        "lesione locale",
-        "lesione cutanea",
-    ]):
-        found.add("lesione_da_pressione")
+    return _unique_keep_order(final)
 
-    if _contains_any(t, ["glicemia", "diabete", "dm2", "diabetico", "diabetica"]):
-        found.add("diabete_tipo_2")
 
-    if _contains_any(t, ["pressione alta", "ipertensione", "iperteso", "ipertesa", "pressione arteriosa elevata"]):
-        found.add("ipertensione")
+def normalize_problems(text_or_items) -> List[str]:
+    """
+    Supports either:
+    - a free-text string
+    - a list of raw problem labels
+    """
+    if text_or_items is None:
+        return []
 
-    if _contains_any(t, ["dispnea", "bpco", "bronchite cronica", "fiato corto", "quadro respiratorio"]):
-        found.add("bpco")
+    found: List[str] = []
 
-    if _contains_any(t, ["scompenso", "insufficienza cardiaca", "edemi declivi", "ortopnea"]):
-        found.add("scompenso_cardiaco")
+    if isinstance(text_or_items, str):
+        t = _clean(text_or_items)
+        for raw, mapped in PROBLEM_MAP.items():
+            if raw in t:
+                found.append(mapped)
+        return _unique_keep_order(found)
 
-    if _contains_any(t, [
-        "scarso appetito",
-        "inappetenza",
-        "ridotto appetito",
-        "mangia poco",
-        "non mangia",
-        "appetito ridotto",
-    ]):
-        found.add("malnutrizione")
+    for item in text_or_items:
+        key = _clean(str(item))
+        if not key:
+            continue
+        found.append(PROBLEM_MAP.get(key, key))
 
-    if _contains_any(t, ["disidratazione", "poca idratazione", "assunzione di liquidi ridotta", "beve poco"]):
-        found.add("disidratazione")
-
-    if _contains_any(t, ["rischio caduta", "instabilità posturale", "deambulazione incerta"]):
-        found.add("rischio_caduta")
-
-    if _contains_any(t, ["astenia", "debolezza generale", "stanchezza"]):
-        found.add("astenia")
-
-    if _contains_any(t, ["nausea"]):
-        found.add("nausea")
-
-    if _contains_any(t, ["capogiro", "vertigine", "vertigini"]):
-        found.add("capogiro")
-
-    # keep only allowed vocab
-    found = {label for label in found if label in PROBLEM_VOCAB}
-    return sorted(found)
+    return _unique_keep_order(found)

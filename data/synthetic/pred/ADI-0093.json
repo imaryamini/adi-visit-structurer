@@ -1,0 +1,35 @@
+{
+  "meta": {
+    "record_id": "ADI-0093",
+    "visit_datetime": "2026-03-02T11:00:00",
+    "operator_role": "infermiere",
+    "extraction_mode": "rules",
+    "llm_model": null,
+    "pipeline_version": "0.4.1",
+    "generated_at": "2026-03-31T00:27:51"
+  },
+  "clinical": {
+    "reason_for_visit": "monitoraggio parametri vitali",
+    "vitals": {
+      "blood_pressure_systolic": 130,
+      "blood_pressure_diastolic": 80,
+      "heart_rate": 64,
+      "temperature": 37.8,
+      "spo2": 99
+    },
+    "interventions": [
+      "monitoraggio_parametri_vitali",
+      "somministrazione_farmaco"
+    ],
+    "follow_up": "controllo programmato",
+    "critical_issues": []
+  },
+  "coding": {
+    "problems_normalized": [],
+    "problems_suspects": []
+  },
+  "quality": {
+    "missing_mandatory_fields": [],
+    "warnings": []
+  }
+}

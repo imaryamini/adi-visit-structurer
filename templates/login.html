@@ -4,12 +4,18 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Login - ADI Assistant</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&display=swap"
+    rel="stylesheet"
+  >
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body class="auth-body">
-  <div class="auth-layout">
-    <section class="auth-panel">
-      <div>
+  <div class="auth-layout auth-layout-claude">
+    <section class="auth-panel auth-panel-claude">
+      <div class="auth-panel-top">
         <div class="logo-wrap">
           <div class="logo-badge">AI</div>
           <div>
@@ -19,25 +25,32 @@
         </div>
 
         <div class="auth-copy">
-          <p class="eyebrow light">Welcome</p>
-          <h2>Structured clinical drafting, made simpler.</h2>
+          <p class="eyebrow light">Welcome back</p>
+          <h2>Clinical drafting with a cleaner workflow.</h2>
           <p>
-            Record a home-care dictation or type a note manually, then transform it into a structured ADI visit draft.
+            Record an ADI home-care dictation or paste a clinical note,
+            then review a structured report draft in a more polished,
+            assistant-style workspace.
           </p>
         </div>
       </div>
 
-      <div class="auth-note">
+      <div class="auth-note auth-note-soft">
         <strong>Workflow</strong>
-        <p>Voice or text input → transcript processing → clinical extraction → structured report.</p>
+        <p>
+          Voice or text input → transcript processing → clinical extraction
+          → structured ADI report.
+        </p>
       </div>
     </section>
 
     <section class="auth-form-side">
-      <div class="auth-card">
+      <div class="auth-card auth-card-claude">
         <p class="eyebrow">Sign in</p>
         <h2>Welcome back</h2>
-        <p class="auth-subtext">Access the clinical voice-to-report assistant.</p>
+        <p class="auth-subtext">
+          Access your ADI Assistant workspace.
+        </p>
 
         <form class="auth-form" onsubmit="event.preventDefault(); window.location.href='/assistant';">
           <div class="field-group">

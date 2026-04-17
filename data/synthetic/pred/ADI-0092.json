@@ -1,0 +1,35 @@
+{
+  "meta": {
+    "record_id": "ADI-0092",
+    "visit_datetime": "2026-02-15T18:30:00",
+    "operator_role": "infermiere",
+    "extraction_mode": "rules",
+    "llm_model": null,
+    "pipeline_version": "0.4.1",
+    "generated_at": "2026-03-31T00:27:51"
+  },
+  "clinical": {
+    "reason_for_visit": "valutazione sintomi generali",
+    "vitals": {
+      "blood_pressure_systolic": 105,
+      "blood_pressure_diastolic": 80,
+      "heart_rate": 68,
+      "temperature": 36.5,
+      "spo2": 94
+    },
+    "interventions": [
+      "valutazione_generale",
+      "monitoraggio_parametri_vitali"
+    ],
+    "follow_up": "ricontatto telefonico",
+    "critical_issues": []
+  },
+  "coding": {
+    "problems_normalized": [],
+    "problems_suspects": []
+  },
+  "quality": {
+    "missing_mandatory_fields": [],
+    "warnings": []
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "meta": {
+    "record_id": "ADI-0035",
+    "visit_datetime": "2026-02-26T11:20:00",
+    "operator_role": "infermiere",
+    "extraction_mode": "rules",
+    "llm_model": null,
+    "pipeline_version": "0.4.1",
+    "generated_at": "2026-03-31T00:27:51"
+  },
+  "clinical": {
+    "reason_for_visit": "controllo post-caduta",
+    "vitals": {
+      "blood_pressure_systolic": 150,
+      "blood_pressure_diastolic": 90,
+      "heart_rate": 65,
+      "temperature": 36.2,
+      "spo2": 98
+    },
+    "interventions": [
+      "valutazione_generale",
+      "monitoraggio_parametri_vitali"
+    ],
+    "follow_up": "controllo programmato",
+    "critical_issues": []
+  },
+  "coding": {
+    "problems_normalized": [
+      "caduta_recente"
+    ],
+    "problems_suspects": []
+  },
+  "quality": {
+    "missing_mandatory_fields": [],
+    "warnings": []
+  }
+}

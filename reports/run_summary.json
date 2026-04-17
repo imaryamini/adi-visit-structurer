@@ -1,0 +1,14 @@
+{
+  "run_timestamp": "2026-03-30T23:17:23",
+  "mode": "hybrid",
+  "model": "llama3.1:8b",
+  "pipeline_version": "0.4.0",
+  "raw_dir": "data/synthetic/raw",
+  "pred_dir": "data/synthetic/pred",
+  "examples_dir": "reports/examples",
+  "records_total": 100,
+  "records_ok": 100,
+  "records_failed": 0,
+  "examples_exported": 3,
+  "failures": []
+}

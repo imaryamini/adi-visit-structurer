@@ -48,6 +48,14 @@ def canonical_reason(label: str | None) -> str | None:
         "rivalutazione caduta recente": "caduta",
         "controllo generale": "controllo_generale",
         "valutazione delle condizioni generali": "controllo_generale",
+        "valutazione generale": "controllo_generale",
+        "controllo post-caduta": "caduta",
+        "dispnea": "controllo_respiratorio",
+        "febbre": "sintomi_generali",
+        "dolore toracico": "rivalutazione_dolore",
+        "dolore lombare": "rivalutazione_dolore",
+        "dolore addominale": "rivalutazione_dolore",
+        "tosse, febbre e lieve dispnea": "controllo_respiratorio",
     }
 
     if t in mapping:
@@ -61,7 +69,7 @@ def canonical_reason(label: str | None) -> str | None:
         return "controllo_catetere"
     if "stomia" in t:
         return "controllo_stomia"
-    if "ossigenoterapia" in t or "respiratorio" in t:
+    if "ossigenoterapia" in t or "respiratorio" in t or "dispnea" in t or "affanno" in t or "tosse" in t:
         return "controllo_respiratorio"
     if "caduta" in t:
         return "caduta"
@@ -69,9 +77,9 @@ def canonical_reason(label: str | None) -> str | None:
         return "controllo_terapia"
     if "parametri" in t or "segni vitali" in t or "pressione" in t:
         return "controllo_parametri"
-    if "astenia" in t or "inappetenza" in t or "nausea" in t or "capogiro" in t or "appetito" in t or "stanchezza" in t:
+    if "astenia" in t or "inappetenza" in t or "nausea" in t or "capogiro" in t or "appetito" in t or "stanchezza" in t or "febbre" in t:
         return "sintomi_generali"
-    if "generali" in t or "controllo generale" in t or "rivalutazione clinica" in t:
+    if "generali" in t or "controllo generale" in t or "rivalutazione clinica" in t or "valutazione generale" in t:
         return "controllo_generale"
 
     return t
@@ -87,7 +95,6 @@ def canonical_problem(label: str | None) -> str | None:
         "dolore": "dolore_cronico",
         "dolore_cronico": "dolore_cronico",
         "dolore cronico": "dolore_cronico",
-
         "lesione": "lesione_da_pressione",
         "lesione_da_pressione": "lesione_da_pressione",
         "lesione da pressione": "lesione_da_pressione",
@@ -95,10 +102,8 @@ def canonical_problem(label: str | None) -> str | None:
         "decubito": "lesione_da_pressione",
         "ferita": "lesione_da_pressione",
         "ulcera": "lesione_da_pressione",
-
         "caduta": "caduta",
         "rischio_caduta": "rischio_caduta",
-
         "ipertensione": "ipertensione",
         "bpco": "bpco",
         "scompenso_cardiaco": "scompenso_cardiaco",
@@ -160,7 +165,7 @@ def normalize_follow_up(fu):
             return {"type": "ricontatto_telefonico", "timing_days": None, "target": None}
         if "ferita" in s or "lesione" in s:
             return {"type": "controllo_ferita", "timing_days": None}
-        if "controllo" in s or "rivalutazione" in s:
+        if "controllo" in s or "rivalutazione" in s or "monitoraggio" in s:
             return {"type": "controllo", "timing_days": None}
         return {"type": s, "timing_days": None}
 
@@ -179,6 +184,30 @@ def follow_up_equal(gold_fu, pred_fu):
     return g == p
 
 
+def normalize_vitals_for_compare(vitals):
+    vitals = vitals or {}
+
+    systolic = vitals.get("blood_pressure_systolic")
+    diastolic = vitals.get("blood_pressure_diastolic")
+
+    if systolic is None or diastolic is None:
+        bp = vitals.get("blood_pressure")
+        if isinstance(bp, str) and "/" in bp:
+            left, right = bp.split("/", 1)
+            left = left.strip()
+            right = right.strip()
+            systolic = systolic if systolic is not None else left
+            diastolic = diastolic if diastolic is not None else right
+
+    return {
+        "blood_pressure_systolic": None if systolic in ("", None) else str(systolic),
+        "blood_pressure_diastolic": None if diastolic in ("", None) else str(diastolic),
+        "heart_rate": None if vitals.get("heart_rate") in ("", None) else str(vitals.get("heart_rate")),
+        "temperature": None if vitals.get("temperature") in ("", None) else str(vitals.get("temperature")),
+        "spo2": None if vitals.get("spo2") in ("", None) else str(vitals.get("spo2")),
+    }
+
+
 def vitals_equal(gold_v, pred_v):
     keys = [
         "blood_pressure_systolic",
@@ -187,8 +216,9 @@ def vitals_equal(gold_v, pred_v):
         "temperature",
         "spo2",
     ]
-    gold_v = gold_v or {}
-    pred_v = pred_v or {}
+    gold_v = normalize_vitals_for_compare(gold_v)
+    pred_v = normalize_vitals_for_compare(pred_v)
+
     for k in keys:
         if gold_v.get(k) != pred_v.get(k):
             return False
@@ -246,6 +276,7 @@ def main():
     follow_up_correct = 0
     vitals_correct = 0
     reason_errors = []
+    vitals_errors = []
 
     for gold, pred in pairs:
         rid = safe_get(gold, "meta", "record_id", default="UNKNOWN")
@@ -270,11 +301,17 @@ def main():
         ):
             follow_up_correct += 1
 
-        if vitals_equal(
-            safe_get(gold, "clinical", "vitals", default={}),
-            safe_get(pred, "clinical", "vitals", default={}),
-        ):
+        gold_vitals = safe_get(gold, "clinical", "vitals", default={})
+        pred_vitals = safe_get(pred, "clinical", "vitals", default={})
+
+        if vitals_equal(gold_vitals, pred_vitals):
             vitals_correct += 1
+        else:
+            vitals_errors.append({
+                "record_id": rid,
+                "gold_vitals_normalized": normalize_vitals_for_compare(gold_vitals),
+                "pred_vitals_normalized": normalize_vitals_for_compare(pred_vitals),
+            })
 
     reason_acc = reason_correct / n if n else 0.0
     follow_up_acc = follow_up_correct / n if n else 0.0
@@ -306,6 +343,7 @@ def main():
         "gold_only_ids": gold_only,
         "pred_only_ids": pred_only,
         "reason_mismatches_sample": reason_errors[:15],
+        "vitals_mismatches_sample": vitals_errors[:15],
     }
 
     metrics_path = REPORTS_DIR / "metrics.json"

@@ -37,7 +37,7 @@ def extract_datetime(text: str) -> Optional[str]:
     return None
 
 
-def extract_bp(text: str):
+def extract_bp(text: str) -> tuple[Optional[int], Optional[int]]:
     lines = [l.strip() for l in text.splitlines() if l.strip()]
     bp_patterns = [
         re.compile(r"\bPA\s*[:=]?\s*(\d{2,3})\s*/\s*(\d{2,3})\b", re.IGNORECASE),
@@ -125,29 +125,28 @@ def extract_spo2(text: str) -> Optional[int]:
 def _reason_from_keywords(text: str) -> Optional[str]:
     t = (text or "").lower()
 
-    # Most specific first
     if "lesione da pressione" in t:
-        return "medicazione lesione da pressione"
+        return "medicazione e controllo lesione"
 
     if any(k in t for k in ["piaga da decubito", "lesione da decubito", "decubito"]):
-        return "medicazione piaga da decubito"
+        return "medicazione e controllo lesione"
 
-    if "dolore al ginocchio destro" in t:
-        return "dolore al ginocchio destro"
+    if any(k in t for k in ["dolore al ginocchio", "dolore ginocchio"]):
+        return "dolore articolare"
 
     if "dolore cronico" in t:
-        return "valutazione dolore cronico"
+        return "rivalutazione dolore"
 
     if any(k in t for k in ["stanchezza", "debolezza generale", "scarso appetito", "ridotto appetito"]):
-        return "stanchezza e scarso appetito"
+        return "valutazione sintomi generali"
 
     if any(k in t for k in ["monitoraggio dei segni vitali", "segni vitali"]) and any(
         k in t for k in ["verifica della terapia", "verifica terapia", "terapia"]
     ):
-        return "monitoraggio segni vitali e verifica terapia"
+        return "controllo terapia e monitoraggio parametri"
 
     if "pressione arteriosa" in t and any(k in t for k in ["terapia", "farmaco", "somministrazione"]):
-        return "controllo pressione e rivalutazione terapia"
+        return "controllo terapia e monitoraggio parametri"
 
     if any(k in t for k in ["catetere vescicale", "catetere", "presidio urinario", "vescicale"]):
         return "controllo e gestione catetere"
@@ -155,11 +154,11 @@ def _reason_from_keywords(text: str) -> Optional[str]:
     if any(k in t for k in ["presidio stomale", "cute peristomale", "stomia", "colostomia", "ileostomia"]):
         return "controllo e gestione stomia"
 
-    if any(k in t for k in ["ossigenoterapia", "o2 terapia", "o2", "controllo respiratorio", "rivalutazione respiratoria"]):
-        return "controllo respiratorio e gestione ossigenoterapia"
+    if any(k in t for k in ["ossigenoterapia", "o2 terapia", "controllo respiratorio", "rivalutazione respiratoria", "dispnea", "affanno"]):
+        return "controllo respiratorio"
 
     if any(k in t for k in ["caduta recente", "post-caduta", "caduta", "scivolato", "trauma recente"]):
-        return "rivalutazione caduta recente"
+        return "controllo post-caduta"
 
     if any(k in t for k in [
         "cambio di medicazione",
@@ -175,7 +174,7 @@ def _reason_from_keywords(text: str) -> Optional[str]:
         "piaga",
         "lesione",
     ]):
-        return "medicazione/controllo lesione"
+        return "medicazione e controllo lesione"
 
     if any(k in t for k in ["dolore", "algia", "sintomatologia algica", "nrs", "vas"]):
         if any(k2 in t for k2 in [
@@ -190,7 +189,7 @@ def _reason_from_keywords(text: str) -> Optional[str]:
         return "rivalutazione dolore"
 
     if any(k in t for k in ["astenia", "inappetenza", "nausea", "capogiro", "sintomi aspecifici", "sintomatologia generale"]):
-        return "riferiti sintomi generali"
+        return "valutazione sintomi generali"
 
     if any(k in t for k in ["educazione del caregiver", "istruzione del caregiver", "supporto al caregiver", "caregiver", "familiare presente", "familiare"]):
         return "educazione caregiver e controllo generale"
@@ -207,7 +206,7 @@ def _reason_from_keywords(text: str) -> Optional[str]:
         "parametri vitali",
         "controllo parametri",
     ]):
-        return "controllo parametri"
+        return "monitoraggio parametri vitali"
 
     if any(k in t for k in ["valutazione delle condizioni generali", "condizioni generali"]):
         return "controllo generale"
@@ -258,37 +257,32 @@ def extract_reason(text: str) -> Optional[str]:
     return None
 
 
-def extract_reason_for_visit(text: str) -> str | None:
+def extract_reason_for_visit(text: str) -> Optional[str]:
     return extract_reason(text)
 
 
 def _extract_days(text: str) -> Optional[int]:
     patterns = [
-        r"\btra\s+(\d+)\s+giorni\b",
-        r"\bentro\s+(\d+)\s+giorni\b",
-        r"\bfra\s+(\d+)\s+giorni\b",
-        r"\bentro\s+tre\s+giorni\b",
-        r"\bentro\s+due\s+giorni\b",
-        r"\bentro\s+una\s+settimana\b",
-        r"\bprossima\s+settimana\b",
-        r"\bsettimana\s+prossima\b",
+        (r"\btra\s+(\d+)\s+giorni\b", None),
+        (r"\bentro\s+(\d+)\s+giorni\b", None),
+        (r"\bfra\s+(\d+)\s+giorni\b", None),
+        (r"\bentro\s+tre\s+giorni\b", 3),
+        (r"\bentro\s+due\s+giorni\b", 2),
+        (r"\bentro\s+una\s+settimana\b", 7),
+        (r"\bprossima\s+settimana\b", 7),
+        (r"\bsettimana\s+prossima\b", 7),
     ]
-    for p in patterns:
+    for p, fixed in patterns:
         m = re.search(p, text, flags=re.IGNORECASE)
         if m:
-            matched = m.group(0).lower()
-            if matched == "entro tre giorni":
-                return 3
-            if matched == "entro due giorni":
-                return 2
-            if matched in {"entro una settimana", "prossima settimana", "settimana prossima"}:
-                return 7
+            if fixed is not None:
+                return fixed
             if m.lastindex:
                 return int(m.group(1))
     return None
 
 
-def extract_follow_up(text: str) -> Any:
+def extract_follow_up(text: str) -> Optional[str]:
     relevant_lines = []
     for sent in _sentences(text):
         low = sent.lower()
@@ -314,12 +308,15 @@ def extract_follow_up(text: str) -> Any:
     days = _extract_days(relevant_text)
 
     if "ricontatto" in low and "telefon" in low:
-        target = "caregiver" if "caregiver" in low else None
-        return {"type": "ricontatto_telefonico", "target": target, "timing_days": days}
+        if days is not None:
+            return f"ricontatto telefonico tra {days} giorni"
+        return "ricontatto telefonico"
 
     if _contains_any(low, [r"\bferita\b", r"\blesione\b", r"\bmedicazione\b", r"\bpiaga\b", r"\bulcera\b"]):
         if any(k in low for k in ["controllo", "rivalutazione", "programmato", "previsto", "follow"]):
-            return {"type": "controllo_ferita", "timing_days": days}
+            if days is not None:
+                return f"controllo ferita tra {days} giorni"
+            return "controllo ferita"
 
     if any(k in low for k in [
         "controllo",
@@ -332,7 +329,9 @@ def extract_follow_up(text: str) -> Any:
         "settimana prossima",
         "entro tre giorni",
     ]):
-        return {"type": "controllo", "timing_days": days}
+        if days is not None:
+            return f"controllo tra {days} giorni"
+        return "controllo programmato"
 
     return None
 
@@ -345,13 +344,14 @@ def extract_interventions(text: str, vitals: Optional[dict] = None, reason: Opti
     has_any_vital = False
     if vitals:
         has_any_vital = any(
-            vitals.get(k) is not None
+            vitals.get(k) not in [None, "", []]
             for k in [
-                "blood_pressure_systolic",
-                "blood_pressure_diastolic",
+                "blood_pressure",
                 "heart_rate",
                 "temperature",
                 "spo2",
+                "blood_pressure_systolic",
+                "blood_pressure_diastolic",
             ]
         )
 
@@ -403,7 +403,7 @@ def extract_interventions(text: str, vitals: Optional[dict] = None, reason: Opti
         interventions.append("somministrazione_farmaco")
     if "parametri" in r or "segni vitali" in r:
         interventions.append("monitoraggio_parametri_vitali")
-    if "ossigenoterapia" in r or "respiratorio" in r:
+    if "respiratorio" in r or "ossigenoterapia" in r:
         interventions.append("gestione_ossigenoterapia")
 
     return list(dict.fromkeys(interventions))

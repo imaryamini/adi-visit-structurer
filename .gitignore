@@ -5,20 +5,22 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# Virtual environment
+# ========================
+# Virtual environments
+# ========================
 .venv/
 venv/
 env/
 
 # ========================
-# Flask
+# Flask / App
 # ========================
 instance/
 *.sqlite3
 *.db
 
 # ========================
-# Env files
+# Environment variables
 # ========================
 .env
 .env.*
@@ -32,14 +34,16 @@ instance/
 # macOS
 # ========================
 .DS_Store
+__MACOSX/
 
 # ========================
-# VS Code
+# VS Code / IDE
 # ========================
 .vscode/
+.idea/
 
 # ========================
-# Uploads (IMPORTANT)
+# Uploads (runtime only)
 # ========================
 uploads/
 *.webm
@@ -47,22 +51,35 @@ uploads/
 *.mp3
 
 # ========================
-# Tests
+# Reports (optional)
+# ========================
+reports/*.html
+reports/examples/
+
+# keep metrics.json (important for submission)
+!reports/metrics.json
+!reports/run_summary.json
+
+# ========================
+# Tests / coverage
 # ========================
 .pytest_cache/
 .coverage
+htmlcov/
 
 # ========================
-# Build
+# Build / packaging
 # ========================
 build/
 dist/
 *.egg-info/
 
 # ========================
-# Models
+# ML / Models
 # ========================
 *.gguf
+*.bin
+*.pt
 
 # ========================
 # Misc

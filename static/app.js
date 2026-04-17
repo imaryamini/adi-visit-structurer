@@ -15,8 +15,8 @@ const menuItems = document.querySelectorAll(".menu-item");
 const views = document.querySelectorAll(".view");
 
 function switchView(viewId) {
-  views.forEach(view => view.classList.remove("active-view"));
-  menuItems.forEach(item => item.classList.remove("active"));
+  views.forEach((view) => view.classList.remove("active-view"));
+  menuItems.forEach((item) => item.classList.remove("active"));
 
   const selectedView = document.getElementById(viewId);
   const selectedButton = document.querySelector(`.menu-item[data-view="${viewId}"]`);
@@ -25,26 +25,52 @@ function switchView(viewId) {
   if (selectedButton) selectedButton.classList.add("active");
 }
 
-menuItems.forEach(item => {
+menuItems.forEach((item) => {
   item.addEventListener("click", () => {
     const viewId = item.getAttribute("data-view");
     switchView(viewId);
   });
 });
 
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
 function safeValue(value, fallback = "Not detected") {
   if (value === null || value === undefined || value === "") return fallback;
   return String(value);
 }
 
-function renderList(items, emptyText = "No items detected") {
+function renderMutedValue(value, fallback = "Not detected") {
+  const hasValue = value !== null && value !== undefined && value !== "";
+  return `<div class="value ${hasValue ? "" : "muted"}">${escapeHtml(safeValue(value, fallback))}</div>`;
+}
+
+function renderTagList(items, emptyText = "No items detected") {
   if (!Array.isArray(items) || items.length === 0) {
-    return `<div class="value muted">${emptyText}</div>`;
+    return `<div class="value muted">${escapeHtml(emptyText)}</div>`;
+  }
+
+  return `
+    <div class="tag-list">
+      ${items.map((item) => `<span class="report-tag">${escapeHtml(item)}</span>`).join("")}
+    </div>
+  `;
+}
+
+function renderSimpleList(items, emptyText = "No items detected") {
+  if (!Array.isArray(items) || items.length === 0) {
+    return `<div class="value muted">${escapeHtml(emptyText)}</div>`;
   }
 
   return `
     <ul class="list">
-      ${items.map(item => `<li>${item}</li>`).join("")}
+      ${items.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}
     </ul>
   `;
 }
@@ -54,21 +80,50 @@ function renderVitals(vitals = {}) {
     <div class="vitals-grid">
       <div class="vital-item">
         <span class="vital-label">Blood Pressure</span>
-        <div class="vital-value">${safeValue(vitals.blood_pressure)}</div>
+        <div class="vital-value">${escapeHtml(safeValue(vitals.blood_pressure))}</div>
       </div>
       <div class="vital-item">
         <span class="vital-label">Heart Rate</span>
-        <div class="vital-value">${safeValue(vitals.heart_rate)}</div>
+        <div class="vital-value">${escapeHtml(safeValue(vitals.heart_rate))}</div>
       </div>
       <div class="vital-item">
         <span class="vital-label">Temperature</span>
-        <div class="vital-value">${safeValue(vitals.temperature)}</div>
+        <div class="vital-value">${escapeHtml(safeValue(vitals.temperature))}</div>
       </div>
       <div class="vital-item">
         <span class="vital-label">SpO2</span>
-        <div class="vital-value">${safeValue(vitals.spo2)}</div>
+        <div class="vital-value">${escapeHtml(safeValue(vitals.spo2))}</div>
       </div>
     </div>
+  `;
+}
+
+function renderValidationBanner(warnings = [], missing = []) {
+  if ((!warnings || warnings.length === 0) && (!missing || missing.length === 0)) {
+    summaryBanner.classList.add("hidden");
+    summaryBanner.innerHTML = "";
+    return;
+  }
+
+  summaryBanner.classList.remove("hidden");
+  summaryBanner.innerHTML = `
+    <div class="banner-title">Validation Summary</div>
+    ${warnings.length ? `
+      <div class="banner-block">
+        <span class="banner-label">Warnings</span>
+        <div class="tag-list">
+          ${warnings.map((item) => `<span class="report-tag warning-tag">${escapeHtml(item)}</span>`).join("")}
+        </div>
+      </div>
+    ` : ""}
+    ${missing.length ? `
+      <div class="banner-block">
+        <span class="banner-label">Missing Mandatory Fields</span>
+        <div class="tag-list">
+          ${missing.map((item) => `<span class="report-tag missing-tag">${escapeHtml(item)}</span>`).join("")}
+        </div>
+      </div>
+    ` : ""}
   `;
 }
 
@@ -77,41 +132,33 @@ function renderStructuredCards(result) {
   const quality = result?.quality || {};
   const meta = result?.meta || {};
 
-  const warnings = quality.warnings || [];
-  const missing = quality.missing_mandatory_fields || [];
+  const warnings = Array.isArray(quality.warnings) ? quality.warnings : [];
+  const missing = Array.isArray(quality.missing_mandatory_fields)
+    ? quality.missing_mandatory_fields
+    : [];
 
-  if (warnings.length > 0 || missing.length > 0) {
-    summaryBanner.classList.remove("hidden");
-    summaryBanner.innerHTML = `
-      <strong>Validation Summary:</strong>
-      ${warnings.length ? `Warnings: ${warnings.join(", ")}.` : ""}
-      ${missing.length ? ` Missing fields: ${missing.join(", ")}.` : ""}
-    `;
-  } else {
-    summaryBanner.classList.add("hidden");
-    summaryBanner.innerHTML = "";
-  }
+  renderValidationBanner(warnings, missing);
 
   reportCards.innerHTML = `
     <div class="report-grid">
-      <div class="info-card span-2">
+      <div class="info-card span-2 hero-info-card">
         <span class="label">Reason for Visit</span>
-        <div class="value ${clinical.reason_for_visit ? "" : "muted"}">${safeValue(clinical.reason_for_visit)}</div>
+        ${renderMutedValue(clinical.reason_for_visit)}
       </div>
 
       <div class="info-card">
         <span class="label">Visit Date / Time</span>
-        <div class="value ${meta.visit_datetime ? "" : "muted"}">${safeValue(meta.visit_datetime)}</div>
+        ${renderMutedValue(meta.visit_datetime)}
       </div>
 
       <div class="info-card">
         <span class="label">Follow-up</span>
-        <div class="value ${clinical.follow_up ? "" : "muted"}">${safeValue(clinical.follow_up)}</div>
+        ${renderMutedValue(clinical.follow_up)}
       </div>
 
       <div class="info-card span-2">
         <span class="label">Anamnesis Brief</span>
-        <div class="value ${clinical.anamnesis_brief ? "" : "muted"}">${safeValue(clinical.anamnesis_brief)}</div>
+        ${renderMutedValue(clinical.anamnesis_brief)}
       </div>
 
       <div class="info-card span-2">
@@ -121,12 +168,12 @@ function renderStructuredCards(result) {
 
       <div class="info-card">
         <span class="label">Interventions</span>
-        ${renderList(clinical.interventions, "No interventions detected")}
+        ${renderTagList(clinical.interventions, "No interventions detected")}
       </div>
 
       <div class="info-card">
         <span class="label">Critical Issues</span>
-        ${renderList(clinical.critical_issues, "No critical issues detected")}
+        ${renderTagList(clinical.critical_issues, "No critical issues detected")}
       </div>
 
       <div class="info-card span-2">
@@ -135,10 +182,16 @@ function renderStructuredCards(result) {
           warnings.length === 0 && missing.length === 0
             ? `<div class="value">No validation issues detected.</div>`
             : `
-              <div class="value" style="margin-bottom:10px;"><strong>Warnings</strong></div>
-              ${renderList(warnings, "No warnings")}
-              <div class="value" style="margin:12px 0 10px;"><strong>Missing Mandatory Fields</strong></div>
-              ${renderList(missing, "No missing fields")}
+              <div class="quality-section">
+                <div class="quality-group">
+                  <div class="quality-title">Warnings</div>
+                  ${renderSimpleList(warnings, "No warnings")}
+                </div>
+                <div class="quality-group">
+                  <div class="quality-title">Missing Mandatory Fields</div>
+                  ${renderSimpleList(missing, "No missing fields")}
+                </div>
+              </div>
             `
         }
       </div>
@@ -148,17 +201,32 @@ function renderStructuredCards(result) {
 
 function setLoadingState(message) {
   transcriptBox.textContent = message;
+
   reportCards.innerHTML = `
     <div class="report-grid">
-      <div class="info-card span-2">
+      <div class="info-card span-2 loading-card">
         <span class="label">Processing</span>
-        <div class="value">${message}</div>
+        <div class="value">${escapeHtml(message)}</div>
       </div>
     </div>
   `;
+
   outputBox.textContent = "";
   summaryBanner.classList.add("hidden");
   summaryBanner.innerHTML = "";
+}
+
+function renderErrorState(message) {
+  reportCards.innerHTML = `
+    <div class="report-grid">
+      <div class="info-card span-2">
+        <span class="label">Error</span>
+        <div class="value">${escapeHtml(message)}</div>
+      </div>
+    </div>
+  `;
+
+  outputBox.textContent = "";
 }
 
 function showReportView() {
@@ -212,33 +280,18 @@ async function stopRecording() {
 
       if (data.error) {
         transcriptBox.textContent = data.error;
-        reportCards.innerHTML = `
-          <div class="report-grid">
-            <div class="info-card span-2">
-              <span class="label">Error</span>
-              <div class="value">${data.error}</div>
-            </div>
-          </div>
-        `;
-        outputBox.textContent = "";
+        renderErrorState(data.error);
         recordingStatus.textContent = "Error";
         return;
       }
 
-      transcriptBox.textContent = data.transcript;
+      transcriptBox.textContent = data.transcript || "No transcript returned.";
       outputBox.textContent = JSON.stringify(data.result, null, 2);
-      renderStructuredCards(data.result);
+      renderStructuredCards(data.result || {});
       recordingStatus.textContent = "Done";
     } catch (error) {
       transcriptBox.textContent = "Audio processing failed.";
-      reportCards.innerHTML = `
-        <div class="report-grid">
-          <div class="info-card span-2">
-            <span class="label">Error</span>
-            <div class="value">Audio processing failed.</div>
-          </div>
-        </div>
-      `;
+      renderErrorState("Audio processing failed.");
       outputBox.textContent = "";
       recordingStatus.textContent = "Error";
       console.error(error);
@@ -268,31 +321,16 @@ async function processText() {
 
     if (data.error) {
       transcriptBox.textContent = data.error;
-      reportCards.innerHTML = `
-        <div class="report-grid">
-          <div class="info-card span-2">
-            <span class="label">Error</span>
-            <div class="value">${data.error}</div>
-          </div>
-        </div>
-      `;
-      outputBox.textContent = "";
+      renderErrorState(data.error);
       return;
     }
 
-    transcriptBox.textContent = data.transcript;
+    transcriptBox.textContent = data.transcript || text;
     outputBox.textContent = JSON.stringify(data.result, null, 2);
-    renderStructuredCards(data.result);
+    renderStructuredCards(data.result || {});
   } catch (error) {
     transcriptBox.textContent = "Text processing failed.";
-    reportCards.innerHTML = `
-      <div class="report-grid">
-        <div class="info-card span-2">
-          <span class="label">Error</span>
-          <div class="value">Text processing failed.</div>
-        </div>
-      </div>
-    `;
+    renderErrorState("Text processing failed.");
     outputBox.textContent = "";
     console.error(error);
   }

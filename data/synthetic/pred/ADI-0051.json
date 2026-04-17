@@ -1,0 +1,38 @@
+{
+  "meta": {
+    "record_id": "ADI-0051",
+    "visit_datetime": "2026-02-13T09:50:00",
+    "operator_role": "infermiere",
+    "extraction_mode": "rules",
+    "llm_model": null,
+    "pipeline_version": "0.4.1",
+    "generated_at": "2026-03-31T00:27:51"
+  },
+  "clinical": {
+    "reason_for_visit": "medicazione e controllo lesione",
+    "vitals": {
+      "blood_pressure_systolic": 130,
+      "blood_pressure_diastolic": 70,
+      "heart_rate": 78,
+      "temperature": 36.5,
+      "spo2": 97
+    },
+    "interventions": [
+      "valutazione_generale",
+      "monitoraggio_parametri_vitali",
+      "medicazione"
+    ],
+    "follow_up": "controllo ferita tra 7 giorni",
+    "critical_issues": []
+  },
+  "coding": {
+    "problems_normalized": [
+      "lesione_cutanea"
+    ],
+    "problems_suspects": []
+  },
+  "quality": {
+    "missing_mandatory_fields": [],
+    "warnings": []
+  }
+}

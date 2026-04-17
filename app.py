@@ -11,6 +11,7 @@ from flask import Flask, jsonify, render_template, request
 
 from src.voice_input import transcribe_audio
 from src.run_pipeline import PREPROCESS
+from src.normalize import normalize_interventions, normalize_problems, normalize_reason
 
 app = Flask(__name__)
 
@@ -57,6 +58,10 @@ def _extract_json_object(text: str) -> Dict[str, Any]:
 
     return {}
 
+
+# ---------------------------
+# Rule-based extraction
+# ---------------------------
 
 def extract_blood_pressure(text: str) -> Optional[str]:
     m = re.search(r"\b(\d{2,3})\s*[/\-]\s*(\d{2,3})\b", text)
@@ -122,21 +127,28 @@ def infer_reason_for_visit(text: str) -> Optional[str]:
     t = text.lower()
 
     reason_rules = [
-        (["dolore toracico"], "dolore toracico"),
-        (["dolore lombare", "lombalgia"], "dolore lombare"),
-        (["dolore addominale"], "dolore addominale"),
-        (["dispnea", "affanno"], "dispnea"),
-        (["febbre"], "febbre"),
-        (["medicazione", "ferita", "lesione", "ulcera", "piaga"], "medicazione e controllo lesione"),
-        (["controllo parametri", "pressione", "pressione arteriosa", "frequenza cardiaca", "spo2", "saturazione"], "controllo parametri"),
-        (["valutazione generale"], "valutazione generale"),
-        (["dolore"], "valutazione dolore e controllo parametri"),
-        (["terapia", "somministrazione farmaco", "farmaco"], "controllo terapia e somministrazione farmaco"),
+        (["tosse", "febbre", "dispnea"], "tosse, febbre e lieve dispnea", "all"),
+        (["dolore toracico"], "dolore toracico", "any"),
+        (["dolore lombare", "lombalgia"], "dolore lombare", "any"),
+        (["dolore addominale"], "dolore addominale", "any"),
+        (["dispnea", "affanno"], "dispnea", "any"),
+        (["febbre"], "febbre", "any"),
+        (["medicazione", "ferita", "lesione", "ulcera", "piaga"], "medicazione e controllo lesione", "any"),
+        (["controllo parametri", "pressione", "pressione arteriosa", "frequenza cardiaca", "spo2", "saturazione"], "controllo parametri", "any"),
+        (["valutazione generale"], "valutazione generale", "any"),
+        (["terapia", "somministrazione farmaco", "farmaco"], "controllo terapia e somministrazione farmaco", "any"),
+        (["caduta", "post-caduta", "post caduta", "caduta domestica"], "controllo post-caduta", "any"),
+        (["dolore"], "valutazione dolore e controllo parametri", "any"),
     ]
 
-    for keywords, label in reason_rules:
-        if any(k in t for k in keywords):
-            return label
+    for keywords, label, mode in reason_rules:
+        if mode == "all":
+            matched = all(k in t for k in keywords)
+        else:
+            matched = any(k in t for k in keywords)
+
+        if matched:
+            return normalize_reason(label)
 
     return None
 
@@ -148,11 +160,12 @@ def infer_follow_up(text: str) -> Optional[str]:
         r"(follow[- ]?up\s+tra\s+\d+\s+\w+)",
         r"(rivalutazione\s+tra\s+\d+\s+\w+)",
         r"(controllo\s+tra\s+\d+\s+\w+)",
+        r"(nuovo\s+controllo\s+tra\s+\d+\s+\w+)",
         r"(tra\s+\d+\s+giorni)",
         r"(tra\s+\d+\s+settimane)",
         r"(tra\s+\d+\s+mesi)",
-        r"(nei\s+prossimi\s+\d+\s+\w+)",
         r"(nelle\s+prossime\s+\d+\s+\w+)",
+        r"(nei\s+prossimi\s+\d+\s+\w+)",
         r"(entro\s+\d+\s+\w+)",
     ]
 
@@ -168,33 +181,59 @@ def infer_interventions(text: str) -> List[str]:
     t = text.lower()
     out: List[str] = []
 
-    if any(k in t for k in ["valutazione generale", "valutato", "eseguita valutazione"]):
+    if any(k in t for k in ["valutazione generale", "valutazione clinica", "eseguita valutazione", "valutato"]):
         out.append("valutazione generale")
 
     if any(k in t for k in ["medicazione", "ferita", "lesione", "ulcera", "piaga"]):
         out.append("medicazione")
 
-    if any(k in t for k in ["farmaco", "somministrazione", "somministrato"]):
+    if any(k in t for k in ["farmaco", "somministrazione", "somministrato", "terapia"]):
         out.append("somministrazione farmaco")
 
-    if any(k in t for k in ["pressione", "fc", "frequenza cardiaca", "spo2", "temperatura", "saturazione"]):
+    if any(k in t for k in ["pressione", "fc", "frequenza cardiaca", "spo2", "saturazione", "temperatura", "parametri vitali", "monitoraggio parametri"]):
         out.append("monitoraggio parametri vitali")
 
-    return list(dict.fromkeys(out))
+    return normalize_interventions(out)
 
 
-def infer_critical_issues(text: str) -> List[str]:
+def infer_critical_issues(text: str, spo2: Optional[str] = None) -> List[str]:
     t = text.lower()
     issues: List[str] = []
 
-    if any(k in t for k in ["dolore toracico", "dispnea", "desaturazione"]):
+    has_dyspnea = any(k in t for k in ["dispnea", "affanno"])
+
+    spo2_val = None
+    if spo2:
+        try:
+            spo2_val = int(spo2)
+        except Exception:
+            spo2_val = None
+
+    if spo2_val is not None and spo2_val < 92:
+        issues.append("possibile instabilità respiratoria")
+
+    tachy_patterns = [
+        r"\bfc\s*[:=]?\s*(1[1-9]\d|200)\b",
+        r"\bfrequenza\s*cardiaca\s*[:=]?\s*(1[1-9]\d|200)\b",
+        r"\bhr\s*[:=]?\s*(1[1-9]\d|200)\b",
+        r"\b(1[1-9]\d|200)\s*bpm\b",
+    ]
+    has_tachy = any(re.search(p, t, flags=re.IGNORECASE) for p in tachy_patterns)
+
+    if has_dyspnea and spo2_val is not None and spo2_val < 94:
+        issues.append("possibile instabilità clinica")
+    elif has_dyspnea and has_tachy:
         issues.append("possibile instabilità clinica")
 
-    if any(k in t for k in ["caduta", "post-caduta", "post caduta"]):
+    if any(k in t for k in ["caduta recente", "recente caduta", "post-caduta", "post caduta", "caduta domestica"]):
         issues.append("caduta recente")
 
     return list(dict.fromkeys(issues))
 
+
+# ---------------------------
+# LLM extraction
+# ---------------------------
 
 def call_llm_extract(text: str) -> Dict[str, Any]:
     prompt = f"""
@@ -234,6 +273,7 @@ EXTRACTION RULES:
   - "controllo parametri"
   - "valutazione generale"
   - "medicazione e controllo lesione"
+  - "controllo post-caduta"
   If nothing is clearly stated, infer the most likely reason from context.
 - anamnesis_brief: short summary of symptoms or clinical context
 - vitals.blood_pressure: format like "120/80" if present
@@ -242,7 +282,7 @@ EXTRACTION RULES:
 - vitals.spo2: oxygen saturation if present
 - follow_up: next step, next visit, monitoring plan, or reassessment if mentioned
 - interventions: list of actions performed
-- critical_issues: list of urgent or clinically relevant issues
+- critical_issues: be conservative and include only if supported by clear evidence
 
 Visit note:
 {text}
@@ -283,7 +323,7 @@ Visit note:
         critical_issues = [str(critical_issues)] if critical_issues else []
 
     return {
-        "reason_for_visit": _safe_str(parsed.get("reason_for_visit")),
+        "reason_for_visit": normalize_reason(_safe_str(parsed.get("reason_for_visit"))),
         "anamnesis_brief": _safe_str(parsed.get("anamnesis_brief")),
         "vitals": {
             "blood_pressure": _safe_str(vitals.get("blood_pressure")),
@@ -292,10 +332,14 @@ Visit note:
             "spo2": _safe_str(vitals.get("spo2")),
         },
         "follow_up": _safe_str(parsed.get("follow_up")),
-        "interventions": [str(x).strip() for x in interventions if str(x).strip()],
-        "critical_issues": [str(x).strip() for x in critical_issues if str(x).strip()],
+        "interventions": normalize_interventions([str(x).strip() for x in interventions if str(x).strip()]),
+        "critical_issues": list(dict.fromkeys([str(x).strip() for x in critical_issues if str(x).strip()])),
     }
 
+
+# ---------------------------
+# Hybrid merge
+# ---------------------------
 
 def hybrid_extract(text: str) -> Dict[str, Any]:
     llm = call_llm_extract(text)
@@ -306,28 +350,35 @@ def hybrid_extract(text: str) -> Dict[str, Any]:
     temp_rule = extract_temperature(text)
     spo2_rule = extract_spo2(text)
 
+    vitals = {
+        "blood_pressure": bp_rule or llm_vitals.get("blood_pressure"),
+        "heart_rate": hr_rule or llm_vitals.get("heart_rate"),
+        "temperature": temp_rule or llm_vitals.get("temperature"),
+        "spo2": spo2_rule or llm_vitals.get("spo2"),
+    }
+
     reason_rule = infer_reason_for_visit(text)
     follow_rule = infer_follow_up(text)
     interventions_rule = infer_interventions(text)
-    critical_rule = infer_critical_issues(text)
 
-    reason = llm.get("reason_for_visit") or reason_rule
+    reason = llm.get("reason_for_visit")
+    if not reason:
+        reason = reason_rule
+    if not reason:
+        reason = "valutazione generale"
+    reason = normalize_reason(reason)
+
     anamnesis = llm.get("anamnesis_brief")
 
-    vitals = {
-        "blood_pressure": llm_vitals.get("blood_pressure") or bp_rule,
-        "heart_rate": llm_vitals.get("heart_rate") or hr_rule,
-        "temperature": llm_vitals.get("temperature") or temp_rule,
-        "spo2": llm_vitals.get("spo2") or spo2_rule,
-    }
-
     follow_up = llm.get("follow_up") or follow_rule
+    if not follow_up:
+        follow_up = "monitoraggio clinico secondo indicazioni"
 
     interventions = llm.get("interventions", []) or []
-    interventions = list(dict.fromkeys(interventions + interventions_rule))
+    interventions = normalize_interventions(interventions + interventions_rule)
 
-    critical_issues = llm.get("critical_issues", []) or []
-    critical_issues = list(dict.fromkeys(critical_issues + critical_rule))
+    critical_issues = infer_critical_issues(text, vitals.get("spo2"))
+    problems = normalize_problems(text)
 
     return {
         "reason_for_visit": reason,
@@ -336,9 +387,14 @@ def hybrid_extract(text: str) -> Dict[str, Any]:
         "follow_up": follow_up,
         "interventions": interventions,
         "critical_issues": critical_issues,
+        "problems_normalized": problems,
         "_llm_error": llm.get("_llm_error"),
     }
 
+
+# ---------------------------
+# Output builder
+# ---------------------------
 
 def build_output(extracted: Dict[str, Any]) -> Dict[str, Any]:
     warnings: List[str] = []
@@ -347,12 +403,16 @@ def build_output(extracted: Dict[str, Any]) -> Dict[str, Any]:
     if not extracted.get("reason_for_visit"):
         missing_fields.append("clinical.reason_for_visit")
 
-    if not extracted.get("follow_up"):
-        warnings.append("No follow-up plan detected")
+    vitals = extracted.get("vitals", {}) or {}
+    present_vitals = [key for key, value in vitals.items() if value]
 
-    vitals = extracted.get("vitals", {})
-    if not any(vitals.values()):
+    if not present_vitals:
         warnings.append("No vital signs recorded in note")
+    elif len(present_vitals) < 2:
+        warnings.append(f"Only partial vital signs detected: {', '.join(present_vitals)}")
+
+    if not extracted.get("interventions"):
+        warnings.append("No interventions detected")
 
     if extracted.get("_llm_error"):
         warnings.append(extracted["_llm_error"])
@@ -377,12 +437,19 @@ def build_output(extracted: Dict[str, Any]) -> Dict[str, Any]:
             "interventions": extracted.get("interventions", []),
             "critical_issues": extracted.get("critical_issues", []),
         },
+        "coding": {
+            "problems_normalized": extracted.get("problems_normalized", []),
+        },
         "quality": {
             "missing_mandatory_fields": missing_fields,
             "warnings": warnings,
         },
     }
 
+
+# ---------------------------
+# Routes
+# ---------------------------
 
 @app.route("/")
 def home():
@@ -433,6 +500,11 @@ def process_audio():
         raw_transcript = transcribe_audio(str(save_path))
     except Exception as e:
         return jsonify({"error": f"Audio transcription failed: {e}"}), 500
+    finally:
+        try:
+            save_path.unlink(missing_ok=True)
+        except Exception:
+            pass
 
     text = PREPROCESS(raw_transcript)
     extracted = hybrid_extract(text)
@@ -445,4 +517,4 @@ def process_audio():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, port=5001)
