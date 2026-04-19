@@ -19,14 +19,10 @@ app = Flask(__name__)
 UPLOAD_DIR = Path("uploads")
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
-# Faster local model
 OLLAMA_MODEL = "mistral"
 OLLAMA_URL = "http://localhost:11434/api/generate"
 
-# If True => no LLM at all
 RULE_ONLY_MODE = False
-
-# If True => call LLM only when rule-based result is weak
 SMART_LLM_MODE = True
 
 
@@ -71,7 +67,7 @@ def _extract_json_object(text: str) -> Dict[str, Any]:
 def _normalize_text(text: str) -> str:
     text = text.lower()
     text = text.replace("é", "e").replace("è", "e")
-    text = re.sub(r"[^\w\s/%.-]", " ", text)
+    text = re.sub(r"[^\w\s/%.\-]", " ", text)
     text = re.sub(r"\s+", " ", text).strip()
     return text
 
@@ -83,48 +79,118 @@ def _normalize_text(text: str) -> str:
 def extract_blood_pressure(text: str) -> Optional[str]:
     t = _normalize_text(text)
 
-    # 1) classic numeric format: 130/80 or 130-80
+    def valid_bp(sys_val: int, dia_val: int) -> bool:
+        return (
+            70 <= sys_val <= 260
+            and 30 <= dia_val <= 150
+            and sys_val > dia_val
+        )
+
+    def parse_num(raw: str, min_v: int, max_v: int) -> Optional[int]:
+        raw = raw.strip()
+        if not raw:
+            return None
+
+        m = re.search(r"\b\d{2,3}\b", raw)
+        if m:
+            value = int(m.group(0))
+            if min_v <= value <= max_v:
+                return value
+
+        value = italian_word_to_number(raw.replace(" ", ""))
+        if value is None:
+            value = extract_number_from_text(raw, min_v, max_v)
+
+        if value is not None and min_v <= value <= max_v:
+            return value
+
+        return None
+
+    # 1) 130/80 or 130-80
     m = re.search(r"\b(\d{2,3})\s*[/\-]\s*(\d{2,3})\b", t)
     if m:
         sys_val = int(m.group(1))
         dia_val = int(m.group(2))
-        if 70 <= sys_val <= 260 and 30 <= dia_val <= 150 and sys_val > dia_val:
+        if valid_bp(sys_val, dia_val):
             return f"{sys_val}/{dia_val}"
 
-    # 2) speech-like numeric format: 130 su 80
+    # 2) 130 su 80
     m = re.search(r"\b(\d{2,3})\s+su\s+(\d{2,3})\b", t)
     if m:
         sys_val = int(m.group(1))
         dia_val = int(m.group(2))
-        if 70 <= sys_val <= 260 and 30 <= dia_val <= 150 and sys_val > dia_val:
+        if valid_bp(sys_val, dia_val):
             return f"{sys_val}/{dia_val}"
 
-    # 3) spoken Italian words near "pressione"
-    # examples:
-    # "pressione centotrenta su ottanta"
-    # "pressione cento trenta su ottanta"
-    pressure_patterns = [
-        r"pressione(?:\s+arteriosa)?\s+([a-z]+(?:\s+[a-z]+)?)\s+su\s+([a-z]+(?:\s+[a-z]+)?)",
-        r"pa\s+([a-z]+(?:\s+[a-z]+)?)\s+su\s+([a-z]+(?:\s+[a-z]+)?)",
-    ]
+    # 3) centotrenta su ottanta
+    m = re.search(r"\b([a-z]+(?:\s+[a-z]+)?)\s+su\s+([a-z]+(?:\s+[a-z]+)?)\b", t)
+    if m:
+        left = m.group(1).strip()
+        right = m.group(2).strip()
 
-    for pat in pressure_patterns:
+        sys_val = parse_num(left, 70, 260)
+        dia_val = parse_num(right, 30, 150)
+
+        if sys_val is not None and dia_val is not None and valid_bp(sys_val, dia_val):
+            return f"{sys_val}/{dia_val}"
+
+    # 4) pressione centotrenta su ottanta / pa ...
+    patterns = [
+        r"pressione(?:\s+arteriosa)?\s+([a-z0-9]+(?:\s+[a-z0-9]+)?)\s+su\s+([a-z0-9]+(?:\s+[a-z0-9]+)?)",
+        r"pa\s+([a-z0-9]+(?:\s+[a-z0-9]+)?)\s+su\s+([a-z0-9]+(?:\s+[a-z0-9]+)?)",
+    ]
+    for pat in patterns:
         m = re.search(pat, t)
         if m:
-            left_raw = m.group(1).strip()
-            right_raw = m.group(2).strip()
+            left = m.group(1).strip()
+            right = m.group(2).strip()
 
-            sys_val = italian_word_to_number(left_raw.replace(" ", ""))
-            if sys_val is None:
-                sys_val = extract_number_from_text(left_raw, 70, 260)
+            sys_val = parse_num(left, 70, 260)
+            dia_val = parse_num(right, 30, 150)
 
-            dia_val = italian_word_to_number(right_raw.replace(" ", ""))
-            if dia_val is None:
-                dia_val = extract_number_from_text(right_raw, 30, 150)
+            if sys_val is not None and dia_val is not None and valid_bp(sys_val, dia_val):
+                return f"{sys_val}/{dia_val}"
 
-            if sys_val is not None and dia_val is not None:
-                if 70 <= sys_val <= 260 and 30 <= dia_val <= 150 and sys_val > dia_val:
-                    return f"{sys_val}/{dia_val}"
+    # 5) la massima è..., la minima è...
+    systolic = None
+    diastolic = None
+
+    max_patterns = [
+        r"(?:la\s+)?massima\s*(?:e|è|:)?\s*([a-z0-9]+(?:\s+[a-z0-9]+)?)",
+        r"sistolica\s*(?:e|è|:)?\s*([a-z0-9]+(?:\s+[a-z0-9]+)?)",
+    ]
+    min_patterns = [
+        r"(?:la\s+)?minima\s*(?:e|è|:)?\s*([a-z0-9]+(?:\s+[a-z0-9]+)?)",
+        r"diastolica\s*(?:e|è|:)?\s*([a-z0-9]+(?:\s+[a-z0-9]+)?)",
+    ]
+
+    for pat in max_patterns:
+        m = re.search(pat, t)
+        if m:
+            systolic = parse_num(m.group(1), 70, 260)
+            if systolic is not None:
+                break
+
+    for pat in min_patterns:
+        m = re.search(pat, t)
+        if m:
+            diastolic = parse_num(m.group(1), 30, 150)
+            if diastolic is not None:
+                break
+
+    if systolic is not None and diastolic is not None and valid_bp(systolic, diastolic):
+        return f"{systolic}/{diastolic}"
+
+    # 6) reversed phrase: minima ..., massima ...
+    rev_min = re.search(r"(?:la\s+)?minima\s*(?:e|è|:)?\s*([a-z0-9]+(?:\s+[a-z0-9]+)?)", t)
+    rev_max = re.search(r"(?:la\s+)?massima\s*(?:e|è|:)?\s*([a-z0-9]+(?:\s+[a-z0-9]+)?)", t)
+
+    if rev_min and rev_max:
+        dia_val = parse_num(rev_min.group(1), 30, 150)
+        sys_val = parse_num(rev_max.group(1), 70, 260)
+
+        if sys_val is not None and dia_val is not None and valid_bp(sys_val, dia_val):
+            return f"{sys_val}/{dia_val}"
 
     return None
 
@@ -132,7 +198,6 @@ def extract_blood_pressure(text: str) -> Optional[str]:
 def extract_heart_rate(text: str) -> Optional[str]:
     t = _normalize_text(text)
 
-    # digits
     patterns = [
         r"\bfc\s*[:=]?\s*(\d{2,3})\b",
         r"\bfrequenza\s*cardiaca\s*[:=]?\s*(\d{2,3})\b",
@@ -147,7 +212,6 @@ def extract_heart_rate(text: str) -> Optional[str]:
             if 30 <= val <= 220:
                 return str(val)
 
-    # spoken Italian words
     spoken_patterns = [
         r"frequenza\s+cardiaca\s+([a-z]+(?:\s+[a-z]+)?)",
         r"fc\s+([a-z]+(?:\s+[a-z]+)?)",
@@ -191,7 +255,6 @@ def extract_temperature(text: str) -> Optional[str]:
 def extract_spo2(text: str) -> Optional[str]:
     t = _normalize_text(text)
 
-    # digits
     patterns = [
         r"\bspo2\s*[:=]?\s*(\d{2,3})\s*%?\b",
         r"\bsaturazione\s*[:=]?\s*(\d{2,3})\s*%?\b",
@@ -204,7 +267,6 @@ def extract_spo2(text: str) -> Optional[str]:
             if 50 <= val <= 100:
                 return str(val)
 
-    # spoken Italian words
     spoken_patterns = [
         r"spo2\s+([a-z]+(?:\s+[a-z]+)?)",
         r"saturazione\s+([a-z]+(?:\s+[a-z]+)?)",
