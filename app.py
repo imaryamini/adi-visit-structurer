@@ -315,19 +315,40 @@ def infer_follow_up(text: str) -> Optional[str]:
     t = _normalize_text(text)
 
     patterns = [
-        r"(follow[- ]?up\s+tra\s+\d+\s+\w+)",
-        r"(rivalutazione\s+tra\s+\d+\s+\w+)",
-        r"(controllo\s+tra\s+\d+\s+\w+)",
-        r"(nuovo\s+controllo\s+tra\s+\d+\s+\w+)",
+        r"(?:si\s+consiglia|consigliato|direi\s+di|da|necessaria|programmata)?\s*(rivalutazione\s+tra\s+\d+\s+\w+)",
+        r"(?:si\s+consiglia|consigliato|direi\s+di|da|necessaria|programmata)?\s*(controllo\s+tra\s+\d+\s+\w+)",
+        r"(?:si\s+consiglia|consigliato|direi\s+di|da|necessaria|programmata)?\s*(ricontrollo\s+tra\s+\d+\s+\w+)",
+        r"(?:si\s+consiglia|consigliato|direi\s+di|da|necessaria|programmata)?\s*(nuova\s+visita\s+tra\s+\d+\s+\w+)",
+        r"(?:si\s+consiglia|consigliato|direi\s+di|da|necessaria|programmata)?\s*(follow[- ]?up\s+tra\s+\d+\s+\w+)",
+        r"(?:si\s+consiglia|consigliato|direi\s+di|da|necessaria|programmata)?\s*(monitoraggio\s+nei\s+prossimi\s+\d+\s+\w+)",
         r"(tra\s+\d+\s+giorni)",
         r"(tra\s+\d+\s+settimane)",
         r"(tra\s+\d+\s+mesi)",
-        r"(nelle\s+prossime\s+\d+\s+\w+)",
-        r"(nei\s+prossimi\s+\d+\s+\w+)",
         r"(entro\s+\d+\s+\w+)",
+        r"(nei\s+prossimi\s+\d+\s+\w+)",
+        r"(nelle\s+prossime\s+\d+\s+\w+)",
+        r"(tra\s+una\s+settimana)",
+        r"(tra\s+due\s+settimane)",
+        r"(tra\s+un\s+mese)",
+        r"(nei\s+prossimi\s+giorni)",
+        r"(nelle\s+prossime\s+settimane)",
+        r"(da\s+rivalutare\s+tra\s+\d+\s+\w+)",
+        r"(da\s+ricontrollare\s+tra\s+\d+\s+\w+)",
     ]
 
     for pat in patterns:
+        m = re.search(pat, t, flags=re.IGNORECASE)
+        if m:
+            return m.group(1).strip()
+
+    fallback_patterns = [
+        r"\b(ricontatto\s+telefonico)\b",
+        r"\b(rivalutazione\s+clinica)\b",
+        r"\b(controllo\s+clinico)\b",
+        r"\b(monitoraggio\s+clinico)\b",
+    ]
+
+    for pat in fallback_patterns:
         m = re.search(pat, t, flags=re.IGNORECASE)
         if m:
             return m.group(1).strip()
@@ -339,17 +360,70 @@ def infer_interventions(text: str) -> List[str]:
     t = _normalize_text(text)
     out: List[str] = []
 
-    if any(k in t for k in ["valutazione generale", "valutazione clinica", "eseguita valutazione", "valutato", "ho fatto una valutazione generale"]):
+    if any(k in t for k in [
+        "valutazione generale",
+        "valutazione clinica",
+        "eseguita valutazione",
+        "valutato",
+        "ho fatto una valutazione generale",
+        "visita di controllo",
+        "controllo generale",
+    ]):
         out.append("valutazione generale")
 
-    if any(k in t for k in ["medicazione", "ferita", "lesione", "ulcera", "piaga"]):
+    if any(k in t for k in [
+        "medicazione",
+        "eseguita medicazione",
+        "controllo lesione",
+        "ferita",
+        "lesione",
+        "ulcera",
+        "piaga",
+        "decubito",
+    ]):
         out.append("medicazione")
 
-    if any(k in t for k in ["farmaco", "somministrazione", "somministrato", "terapia"]):
+    if any(k in t for k in [
+        "farmaco",
+        "somministrazione",
+        "somministrato",
+        "somministrata terapia",
+        "terapia",
+        "controllo terapia",
+    ]):
         out.append("somministrazione farmaco")
 
-    if any(k in t for k in ["pressione", "fc", "frequenza cardiaca", "spo2", "saturazione", "temperatura", "parametri vitali", "monitoraggio parametri"]):
+    if any(k in t for k in [
+        "pressione",
+        "fc",
+        "frequenza cardiaca",
+        "spo2",
+        "saturazione",
+        "temperatura",
+        "parametri vitali",
+        "monitoraggio parametri",
+        "monitoraggio dei parametri",
+        "monitoraggio parametri vitali",
+        "rilevati parametri",
+        "controllo parametri",
+    ]):
         out.append("monitoraggio parametri vitali")
+
+    if any(k in t for k in [
+        "educazione caregiver",
+        "istruito il caregiver",
+        "consigli al caregiver",
+        "educazione sanitaria",
+    ]):
+        out.append("educazione caregiver")
+
+    if any(k in t for k in [
+        "controllo saturazione",
+        "monitoraggio saturazione",
+        "valutazione respiratoria",
+        "controllo respiratorio",
+    ]):
+        out.append("monitoraggio respiratorio")
 
     return normalize_interventions(out)
 
