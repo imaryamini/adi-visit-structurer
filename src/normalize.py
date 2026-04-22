@@ -18,6 +18,11 @@ REASON_MAP = {
     "febbre": "febbre",
     "tosse febbre e lieve dispnea": "tosse, febbre e lieve dispnea",
     "tosse, febbre e lieve dispnea": "tosse, febbre e lieve dispnea",
+    "valutazione dolore cronico": "valutazione dolore cronico",
+    "valutazione dolore e controllo parametri": "valutazione dolore e controllo parametri",
+    "rivalutazione dolore": "rivalutazione dolore",
+    "stanchezza e scarso appetito": "stanchezza e scarso appetito",
+    "riferiti sintomi generali": "riferiti sintomi generali",
 
     # parameter monitoring
     "controllo parametri": "controllo parametri",
@@ -28,7 +33,7 @@ REASON_MAP = {
 
     # general visit
     "valutazione generale": "valutazione generale",
-    "controllo generale": "valutazione generale",
+    "controllo generale": "controllo generale",
     "valutazione clinica generale": "valutazione generale",
 
     # wound / dressing
@@ -36,11 +41,13 @@ REASON_MAP = {
     "controllo lesione": "medicazione e controllo lesione",
     "medicazione lesione": "medicazione e controllo lesione",
     "medicazione e controllo lesione": "medicazione e controllo lesione",
+    "medicazione piaga da decubito": "medicazione piaga da decubito",
 
     # therapy
     "somministrazione terapia": "controllo terapia e somministrazione farmaco",
     "somministrazione farmaco": "controllo terapia e somministrazione farmaco",
     "controllo terapia": "controllo terapia e somministrazione farmaco",
+    "controllo terapia/somministrazione farmaco": "controllo terapia e somministrazione farmaco",
     "controllo terapia e somministrazione farmaco": "controllo terapia e somministrazione farmaco",
 
     # fall
@@ -119,6 +126,7 @@ PROBLEM_MAP = {
     "capogiro": "capogiro",
     "inappetenza": "malnutrizione",
     "scarso appetito": "malnutrizione",
+    "ridotto appetito": "malnutrizione",
     "disidratazione": "disidratazione",
 }
 
@@ -146,26 +154,44 @@ def normalize_reason(reason: Optional[str]) -> Optional[str]:
     if key in REASON_MAP:
         return REASON_MAP[key]
 
-    # heuristic fallback
-    if any(x in key for x in ["lesione", "ferita", "ulcera", "piaga", "medicazione"]):
+    if any(x in key for x in ["lesione", "ferita", "ulcera", "piaga", "medicazione", "decubito"]):
+        if "decubito" in key or "piaga" in key:
+            return "medicazione piaga da decubito"
         return "medicazione e controllo lesione"
+
     if "dolore lombare" in key or "lombalgia" in key:
         return "dolore lombare"
     if "dolore toracico" in key:
         return "dolore toracico"
     if "dolore addominale" in key:
         return "dolore addominale"
+    if "dolore" in key and "parametri" in key:
+        return "valutazione dolore e controllo parametri"
+    if "dolore" in key:
+        return "rivalutazione dolore"
+
     if "dispnea" in key or "affanno" in key:
         return "dispnea"
+    if "febbre" in key and "tosse" in key:
+        return "tosse, febbre e lieve dispnea"
     if "febbre" in key:
         return "febbre"
+
     if "caduta" in key:
         return "controllo post-caduta"
-    if any(x in key for x in ["parametri", "pressione", "frequenza cardiaca", "spo2", "saturazione"]):
-        return "controllo parametri"
+
     if any(x in key for x in ["terapia", "farmaco", "somministrazione"]):
         return "controllo terapia e somministrazione farmaco"
-    if "valutazione generale" in key or "controllo generale" in key:
+
+    if any(x in key for x in ["parametri", "pressione", "frequenza cardiaca", "spo2", "saturazione"]):
+        return "controllo parametri"
+
+    if any(x in key for x in ["stanchezza", "astenia", "scarso appetito", "inappetenza", "ridotto appetito", "sintomi generali"]):
+        return "riferiti sintomi generali"
+
+    if "controllo generale" in key:
+        return "controllo generale"
+    if "valutazione generale" in key:
         return "valutazione generale"
 
     return key
@@ -185,7 +211,6 @@ def normalize_interventions(interventions: Optional[Iterable[str]]) -> List[str]
         mapped = INTERVENTION_MAP.get(key)
 
         if mapped is None:
-            # heuristic fallback
             if any(x in key for x in ["parametri", "pressione", "frequenza cardiaca", "spo2", "saturazione", "temperatura"]):
                 mapped = "monitoraggio parametri vitali"
             elif any(x in key for x in ["medicazione", "ferita", "lesione", "ulcera", "piaga"]):
@@ -205,7 +230,6 @@ def normalize_interventions(interventions: Optional[Iterable[str]]) -> List[str]
 
     normalized = _unique_keep_order(normalized)
 
-    # stronger merge rules
     final: List[str] = []
     has_vitals = "monitoraggio parametri vitali" in normalized
     has_general = "valutazione generale" in normalized
@@ -241,12 +265,28 @@ def normalize_problems(text_or_items) -> List[str]:
             if raw in t:
                 found.append(mapped)
 
-        # heuristic fallback
-        if "dolore" in t and "dolore_lombare" not in found and "dolore_toracico" not in found and "dolore_addominale" not in found:
+        if (
+            "dolore" in t
+            and "dolore_lombare" not in found
+            and "dolore_toracico" not in found
+            and "dolore_addominale" not in found
+        ):
             found.append("dolore_generico")
-        if "saturazione" in t or "spo2" in t:
-            if "dispnea" in t or "affanno" in t:
+
+        if "dispnea" in t or "affanno" in t:
+            if "dispnea" not in found:
                 found.append("dispnea")
+
+        if "stanchezza" in t or "astenia" in t or "debolezza" in t:
+            if "astenia" not in found:
+                found.append("astenia")
+
+        if "scarso appetito" in t or "inappetenza" in t or "ridotto appetito" in t:
+            if "malnutrizione" not in found:
+                found.append("malnutrizione")
+
+        if "febbre" in t and "febbre" not in found:
+            found.append("febbre")
 
         return _unique_keep_order(found)
 
@@ -281,13 +321,13 @@ def normalize_problems(text_or_items) -> List[str]:
                 mapped = "scompenso_cardiaco"
             elif "diabete" in key or "glicemia" in key:
                 mapped = "diabete_tipo_2"
-            elif "astenia" in key or "stanchezza" in key:
+            elif "astenia" in key or "stanchezza" in key or "debolezza" in key:
                 mapped = "astenia"
             elif "nausea" in key:
                 mapped = "nausea"
             elif "capogiro" in key or "vertigine" in key:
                 mapped = "capogiro"
-            elif "inappetenza" in key or "scarso appetito" in key:
+            elif "inappetenza" in key or "scarso appetito" in key or "ridotto appetito" in key:
                 mapped = "malnutrizione"
             elif "disidrata" in key:
                 mapped = "disidratazione"

@@ -3,10 +3,10 @@
     "record_id": "ADI-0073",
     "visit_datetime": "2026-03-13T12:40:00",
     "operator_role": "infermiere",
-    "extraction_mode": "rules",
-    "llm_model": null,
+    "extraction_mode": "hybrid",
+    "llm_model": "llama3.1:8b",
     "pipeline_version": "0.4.1",
-    "generated_at": "2026-03-31T00:27:51"
+    "generated_at": "2026-04-22T20:04:23"
   },
   "clinical": {
     "reason_for_visit": "valutazione sintomi generali",
@@ -24,7 +24,10 @@
     "critical_issues": []
   },
   "coding": {
-    "problems_normalized": [],
+    "problems_normalized": [
+      "malnutrizione",
+      "nausea"
+    ],
     "problems_suspects": []
   },
   "quality": {

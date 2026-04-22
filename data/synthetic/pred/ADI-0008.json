@@ -3,10 +3,10 @@
     "record_id": "ADI-0008",
     "visit_datetime": "2026-02-24T16:20:00",
     "operator_role": "infermiere",
-    "extraction_mode": "rules",
-    "llm_model": null,
+    "extraction_mode": "hybrid",
+    "llm_model": "llama3.1:8b",
     "pipeline_version": "0.4.1",
-    "generated_at": "2026-03-31T00:27:51"
+    "generated_at": "2026-04-22T19:51:52"
   },
   "clinical": {
     "reason_for_visit": "controllo post-caduta",

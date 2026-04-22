@@ -3,10 +3,10 @@
     "record_id": "ADI-0063",
     "visit_datetime": "2026-02-19T16:20:00",
     "operator_role": "infermiere",
-    "extraction_mode": "rules",
-    "llm_model": null,
+    "extraction_mode": "hybrid",
+    "llm_model": "llama3.1:8b",
     "pipeline_version": "0.4.1",
-    "generated_at": "2026-03-31T00:27:51"
+    "generated_at": "2026-04-22T20:01:18"
   },
   "clinical": {
     "reason_for_visit": "rivalutazione dolore",
@@ -18,16 +18,18 @@
       "spo2": null
     },
     "interventions": [
+      "medicazione",
       "valutazione_generale",
-      "monitoraggio_parametri_vitali",
-      "medicazione"
+      "monitoraggio_parametri_vitali"
     ],
     "follow_up": "controllo ferita",
     "critical_issues": []
   },
   "coding": {
     "problems_normalized": [
-      "lesione_cutanea"
+      "persistenza di dolore",
+      "lesione_cutanea",
+      "dolore_generico"
     ],
     "problems_suspects": []
   },

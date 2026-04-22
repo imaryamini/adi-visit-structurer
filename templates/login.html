@@ -1,77 +1,225 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Login - ADI Assistant</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&display=swap"
-    rel="stylesheet"
-  >
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <meta charset="UTF-8">
+  <title>ADI Assistant - Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'DM Sans', sans-serif;
+      background: linear-gradient(180deg, #0b1020 0%, #111827 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      color: white;
+      overflow: hidden;
+    }
+
+    .page-shell {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      opacity: 0;
+      transform: translateY(24px);
+      animation: pageIn 0.7s ease forwards;
+    }
+
+    .page-shell.page-out {
+      animation: pageOut 0.45s ease forwards;
+    }
+
+    .login-box {
+      background: rgba(17, 24, 39, 0.96);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 42px 36px;
+      border-radius: 24px;
+      width: 100%;
+      max-width: 390px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35);
+    }
+
+    .brand-wrap {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .brand-badge {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 16px;
+      border-radius: 18px;
+      background: linear-gradient(180deg, #ef9a47 0%, #e37a1f 100%);
+      display: grid;
+      place-items: center;
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: white;
+      box-shadow: 0 12px 28px rgba(234, 122, 31, 0.28);
+    }
+
+    h2 {
+      margin: 0 0 8px;
+      font-weight: 800;
+      font-size: 2rem;
+      letter-spacing: -0.03em;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: #9ca3af;
+      font-size: 0.98rem;
+      line-height: 1.5;
+    }
+
+    .form-wrap {
+      margin-top: 28px;
+    }
+
+    .field {
+      margin-bottom: 14px;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      outline: none;
+      font-size: 15px;
+      background: #1f2937;
+      color: white;
+      transition: 0.2s ease;
+    }
+
+    input::placeholder {
+      color: #9ca3af;
+    }
+
+    input:focus {
+      border-color: rgba(234, 122, 31, 0.6);
+      box-shadow: 0 0 0 4px rgba(234, 122, 31, 0.12);
+      background: #243041;
+    }
+
+    .login-btn {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 14px;
+      border: none;
+      font-weight: 800;
+      font-size: 16px;
+      cursor: pointer;
+      background: linear-gradient(180deg, #ef9a47 0%, #e37a1f 100%);
+      color: white;
+      transition: 0.22s ease;
+      margin-top: 8px;
+    }
+
+    .login-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 24px rgba(234, 122, 31, 0.28);
+    }
+
+    .login-btn.loading {
+      opacity: 0.9;
+      cursor: wait;
+    }
+
+    .login-btn.loading::after {
+      content: " ...";
+    }
+
+    .link {
+      text-align: center;
+      margin-top: 16px;
+      font-size: 14px;
+      color: #9ca3af;
+    }
+
+    .link a {
+      color: #ef9a47;
+      text-decoration: none;
+    }
+
+    .link a:hover {
+      text-decoration: underline;
+    }
+
+    @keyframes pageIn {
+      from {
+        opacity: 0;
+        transform: translateY(24px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes pageOut {
+      from {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      to {
+        opacity: 0;
+        transform: translateY(-18px);
+      }
+    }
+  </style>
 </head>
-<body class="auth-body">
-  <div class="auth-layout auth-layout-claude">
-    <section class="auth-panel auth-panel-claude">
-      <div class="auth-panel-top">
-        <div class="logo-wrap">
-          <div class="logo-badge">AI</div>
-          <div>
-            <h1 class="logo-title">ADI Assistant</h1>
-            <p class="logo-subtitle">Clinical Dictation Structurer</p>
-          </div>
+<body>
+  <div id="pageShell" class="page-shell">
+    <div class="login-box">
+      <div class="brand-wrap">
+        <div class="brand-badge">AI</div>
+        <h2>ADI Assistant</h2>
+        <p class="subtitle">Sign in to continue to your clinical workspace.</p>
+      </div>
+
+      <div class="form-wrap">
+        <div class="field">
+          <input type="email" placeholder="Email">
         </div>
 
-        <div class="auth-copy">
-          <p class="eyebrow light">Welcome back</p>
-          <h2>Clinical drafting with a cleaner workflow.</h2>
-          <p>
-            Record an ADI home-care dictation or paste a clinical note,
-            then review a structured report draft in a more polished,
-            assistant-style workspace.
-          </p>
+        <div class="field">
+          <input type="password" placeholder="Password">
+        </div>
+
+        <button id="loginBtn" class="login-btn" type="button">
+          Login
+        </button>
+
+        <div class="link">
+          Don't have an account? <a href="/register">Register</a>
         </div>
       </div>
-
-      <div class="auth-note auth-note-soft">
-        <strong>Workflow</strong>
-        <p>
-          Voice or text input → transcript processing → clinical extraction
-          → structured ADI report.
-        </p>
-      </div>
-    </section>
-
-    <section class="auth-form-side">
-      <div class="auth-card auth-card-claude">
-        <p class="eyebrow">Sign in</p>
-        <h2>Welcome back</h2>
-        <p class="auth-subtext">
-          Access your ADI Assistant workspace.
-        </p>
-
-        <form class="auth-form" onsubmit="event.preventDefault(); window.location.href='/assistant';">
-          <div class="field-group">
-            <label>Email</label>
-            <input type="email" placeholder="Enter your email" required>
-          </div>
-
-          <div class="field-group">
-            <label>Password</label>
-            <input type="password" placeholder="Enter your password" required>
-          </div>
-
-          <button type="submit" class="primary-btn auth-main-btn">Login</button>
-        </form>
-
-        <p class="auth-footer">
-          Don’t have an account?
-          <a href="/register">Register</a>
-        </p>
-      </div>
-    </section>
+    </div>
   </div>
+
+  <script>
+    const loginBtn = document.getElementById("loginBtn");
+    const pageShell = document.getElementById("pageShell");
+
+    loginBtn.addEventListener("click", () => {
+      loginBtn.classList.add("loading");
+      loginBtn.disabled = true;
+      pageShell.classList.add("page-out");
+
+      setTimeout(() => {
+        window.location.href = "/assistant";
+      }, 420);
+    });
+  </script>
 </body>
 </html>

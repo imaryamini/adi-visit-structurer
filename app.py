@@ -72,6 +72,72 @@ def _normalize_text(text: str) -> str:
     return text
 
 
+def _extract_timing_days(text: str) -> Optional[int]:
+    t = _normalize_text(text)
+
+    num_map = {
+        "uno": 1, "una": 1, "un": 1,
+        "due": 2,
+        "tre": 3,
+        "quattro": 4,
+        "cinque": 5,
+        "sei": 6,
+        "sette": 7,
+        "otto": 8,
+        "nove": 9,
+        "dieci": 10,
+        "undici": 11,
+        "dodici": 12,
+        "quattordici": 14,
+        "quindici": 15,
+        "venti": 20,
+        "trenta": 30,
+    }
+
+    patterns = [
+        (r"\btra\s+(\d+)\s+giorni\b", 1),
+        (r"\bentro\s+(\d+)\s+giorni\b", 1),
+        (r"\bnei\s+prossimi\s+(\d+)\s+giorni\b", 1),
+        (r"\bnelle\s+prossime\s+(\d+)\s+settimane\b", 7),
+        (r"\btra\s+(\d+)\s+settimane\b", 7),
+        (r"\btra\s+(\d+)\s+mesi\b", 30),
+        (r"\bentro\s+(\d+)\s+settimane\b", 7),
+        (r"\bentro\s+(\d+)\s+mesi\b", 30),
+    ]
+
+    for pat, mult in patterns:
+        m = re.search(pat, t)
+        if m:
+            return int(m.group(1)) * mult
+
+    word_patterns = [
+        (r"\btra\s+(uno|una|un|due|tre|quattro|cinque|sei|sette|otto|nove|dieci|undici|dodici|quattordici|quindici|venti|trenta)\s+giorni\b", 1),
+        (r"\btra\s+(uno|una|un|due|tre|quattro|cinque|sei|sette|otto|nove|dieci)\s+settimane\b", 7),
+        (r"\btra\s+(uno|una|un|due|tre)\s+mesi\b", 30),
+        (r"\bentro\s+(uno|una|un|due|tre|quattro|cinque|sei|sette)\s+giorni\b", 1),
+    ]
+
+    for pat, mult in word_patterns:
+        m = re.search(pat, t)
+        if m:
+            return num_map.get(m.group(1), 0) * mult
+
+    if re.search(r"\bnei\s+prossimi\s+giorni\b", t):
+        return 3
+    if re.search(r"\ba\s+breve\b", t):
+        return 3
+    if re.search(r"\btra\s+qualche\s+giorno\b", t):
+        return 3
+    if re.search(r"\btra\s+una\s+settimana\b", t):
+        return 7
+    if re.search(r"\btra\s+due\s+settimane\b", t):
+        return 14
+    if re.search(r"\btra\s+un\s+mese\b", t):
+        return 30
+
+    return None
+
+
 # ---------------------------
 # Rule-based extraction
 # ---------------------------
@@ -106,7 +172,6 @@ def extract_blood_pressure(text: str) -> Optional[str]:
 
         return None
 
-    # 1) 130/80 or 130-80
     m = re.search(r"\b(\d{2,3})\s*[/\-]\s*(\d{2,3})\b", t)
     if m:
         sys_val = int(m.group(1))
@@ -114,7 +179,6 @@ def extract_blood_pressure(text: str) -> Optional[str]:
         if valid_bp(sys_val, dia_val):
             return f"{sys_val}/{dia_val}"
 
-    # 2) 130 su 80
     m = re.search(r"\b(\d{2,3})\s+su\s+(\d{2,3})\b", t)
     if m:
         sys_val = int(m.group(1))
@@ -122,19 +186,13 @@ def extract_blood_pressure(text: str) -> Optional[str]:
         if valid_bp(sys_val, dia_val):
             return f"{sys_val}/{dia_val}"
 
-    # 3) centotrenta su ottanta
     m = re.search(r"\b([a-z]+(?:\s+[a-z]+)?)\s+su\s+([a-z]+(?:\s+[a-z]+)?)\b", t)
     if m:
-        left = m.group(1).strip()
-        right = m.group(2).strip()
-
-        sys_val = parse_num(left, 70, 260)
-        dia_val = parse_num(right, 30, 150)
-
+        sys_val = parse_num(m.group(1).strip(), 70, 260)
+        dia_val = parse_num(m.group(2).strip(), 30, 150)
         if sys_val is not None and dia_val is not None and valid_bp(sys_val, dia_val):
             return f"{sys_val}/{dia_val}"
 
-    # 4) pressione centotrenta su ottanta / pa ...
     patterns = [
         r"pressione(?:\s+arteriosa)?\s+([a-z0-9]+(?:\s+[a-z0-9]+)?)\s+su\s+([a-z0-9]+(?:\s+[a-z0-9]+)?)",
         r"pa\s+([a-z0-9]+(?:\s+[a-z0-9]+)?)\s+su\s+([a-z0-9]+(?:\s+[a-z0-9]+)?)",
@@ -142,16 +200,11 @@ def extract_blood_pressure(text: str) -> Optional[str]:
     for pat in patterns:
         m = re.search(pat, t)
         if m:
-            left = m.group(1).strip()
-            right = m.group(2).strip()
-
-            sys_val = parse_num(left, 70, 260)
-            dia_val = parse_num(right, 30, 150)
-
+            sys_val = parse_num(m.group(1).strip(), 70, 260)
+            dia_val = parse_num(m.group(2).strip(), 30, 150)
             if sys_val is not None and dia_val is not None and valid_bp(sys_val, dia_val):
                 return f"{sys_val}/{dia_val}"
 
-    # 5) la massima è..., la minima è...
     systolic = None
     diastolic = None
 
@@ -181,14 +234,12 @@ def extract_blood_pressure(text: str) -> Optional[str]:
     if systolic is not None and diastolic is not None and valid_bp(systolic, diastolic):
         return f"{systolic}/{diastolic}"
 
-    # 6) reversed phrase: minima ..., massima ...
     rev_min = re.search(r"(?:la\s+)?minima\s*(?:e|è|:)?\s*([a-z0-9]+(?:\s+[a-z0-9]+)?)", t)
     rev_max = re.search(r"(?:la\s+)?massima\s*(?:e|è|:)?\s*([a-z0-9]+(?:\s+[a-z0-9]+)?)", t)
 
     if rev_min and rev_max:
         dia_val = parse_num(rev_min.group(1), 30, 150)
         sys_val = parse_num(rev_max.group(1), 70, 260)
-
         if sys_val is not None and dia_val is not None and valid_bp(sys_val, dia_val):
             return f"{sys_val}/{dia_val}"
 
@@ -257,8 +308,10 @@ def extract_spo2(text: str) -> Optional[str]:
 
     patterns = [
         r"\bspo2\s*[:=]?\s*(\d{2,3})\s*%?\b",
-        r"\bsaturazione\s*[:=]?\s*(\d{2,3})\s*%?\b",
-        r"\bsat\.?\s*[:=]?\s*(\d{2,3})\s*%?\b",
+        r"\bsat(?:urazione)?\.?\s*[:=]?\s*(\d{2,3})\s*%?\b",
+        r"\bsaturazione(?:\s+di\s+ossigeno)?\s*[:=]?\s*(\d{2,3})\s*%?\b",
+        r"\bo2\s*sat(?:uration)?\s*[:=]?\s*(\d{2,3})\s*%?\b",
+        r"\b(\d{2,3})\s*%\s*(?:di\s+)?saturazione\b",
     ]
     for pat in patterns:
         m = re.search(pat, t, flags=re.IGNORECASE)
@@ -268,9 +321,10 @@ def extract_spo2(text: str) -> Optional[str]:
                 return str(val)
 
     spoken_patterns = [
-        r"spo2\s+([a-z]+(?:\s+[a-z]+)?)",
-        r"saturazione\s+([a-z]+(?:\s+[a-z]+)?)",
-        r"sat\.?\s+([a-z]+(?:\s+[a-z]+)?)",
+        r"\bsaturazione\s+([a-z]+(?:\s+[a-z]+)?)\b",
+        r"\bspo2\s+([a-z]+(?:\s+[a-z]+)?)\b",
+        r"\bsat\.?\s+([a-z]+(?:\s+[a-z]+)?)\b",
+        r"\bossigenazione\s+([a-z]+(?:\s+[a-z]+)?)\b",
     ]
     for pat in spoken_patterns:
         m = re.search(pat, t, flags=re.IGNORECASE)
@@ -282,28 +336,54 @@ def extract_spo2(text: str) -> Optional[str]:
             if val is not None and 50 <= val <= 100:
                 return str(val)
 
+    generic = re.finditer(r"\b(\d{2,3})\s*(?:%|per\s+cento)\b", t, flags=re.IGNORECASE)
+    for m in generic:
+        val = int(m.group(1))
+        left = t[max(0, m.start() - 40):m.start()]
+        right = t[m.end():min(len(t), m.end() + 40)]
+        context = f"{left} {right}"
+        if any(k in context for k in ["spo2", "sat", "saturazione", "ossigen"]):
+            if 50 <= val <= 100:
+                return str(val)
+
     return None
 
 
 def infer_reason_for_visit(text: str) -> Optional[str]:
     t = _normalize_text(text)
 
-    reason_rules = [
-        (["tosse", "febbre", "dispnea"], "tosse, febbre e lieve dispnea", "all"),
-        (["dolore toracico"], "dolore toracico", "any"),
-        (["dolore lombare", "lombalgia"], "dolore lombare", "any"),
+    rules = [
+        (["medicazione", "piaga"], "medicazione piaga da decubito", "all"),
+        (["medicazione", "decubito"], "medicazione piaga da decubito", "all"),
+        (["medicazione", "ulcera"], "medicazione e controllo lesione", "all"),
+        (["medicazione", "ferita"], "medicazione e controllo lesione", "all"),
+        (["medicazione", "lesione"], "medicazione e controllo lesione", "all"),
+        (["controllo terapia"], "controllo terapia/somministrazione farmaco", "any"),
+        (["somministrazione farmaco"], "controllo terapia/somministrazione farmaco", "any"),
+        (["terapia"], "controllo terapia/somministrazione farmaco", "any"),
+        (["farmaco"], "controllo terapia/somministrazione farmaco", "any"),
+        (["dolore cronico"], "valutazione dolore cronico", "any"),
+        (["dolore", "parametri"], "valutazione dolore e controllo parametri", "all"),
+        (["dolore lombare"], "dolore lombare", "any"),
+        (["lombalgia"], "dolore lombare", "any"),
         (["dolore addominale"], "dolore addominale", "any"),
-        (["dispnea", "affanno"], "dispnea", "any"),
+        (["dolore toracico"], "dolore toracico", "any"),
+        (["stanchezza", "appetito"], "stanchezza e scarso appetito", "all"),
+        (["sintomi generali"], "riferiti sintomi generali", "any"),
+        (["febbre", "tosse", "dispnea"], "tosse, febbre e lieve dispnea", "all"),
+        (["dispnea"], "dispnea", "any"),
         (["febbre"], "febbre", "any"),
-        (["medicazione", "ferita", "lesione", "ulcera", "piaga"], "medicazione e controllo lesione", "any"),
-        (["controllo parametri", "pressione", "pressione arteriosa", "frequenza cardiaca", "spo2", "saturazione"], "controllo parametri", "any"),
+        (["caduta"], "controllo post-caduta", "any"),
+        (
+            ["controllo parametri", "pressione", "frequenza cardiaca", "spo2", "saturazione", "temperatura"],
+            "controllo parametri",
+            "any",
+        ),
         (["valutazione generale"], "valutazione generale", "any"),
-        (["terapia", "somministrazione farmaco", "farmaco"], "controllo terapia e somministrazione farmaco", "any"),
-        (["caduta", "post-caduta", "post caduta", "caduta domestica"], "controllo post-caduta", "any"),
-        (["dolore"], "valutazione dolore e controllo parametri", "any"),
+        (["controllo generale"], "controllo generale", "any"),
     ]
 
-    for keywords, label, mode in reason_rules:
+    for keywords, label, mode in rules:
         matched = all(k in t for k in keywords) if mode == "all" else any(k in t for k in keywords)
         if matched:
             return normalize_reason(label)
@@ -311,47 +391,41 @@ def infer_reason_for_visit(text: str) -> Optional[str]:
     return None
 
 
-def infer_follow_up(text: str) -> Optional[str]:
+def infer_follow_up(text: str) -> Optional[Dict[str, Any]]:
     t = _normalize_text(text)
 
-    patterns = [
-        r"(?:si\s+consiglia|consigliato|direi\s+di|da|necessaria|programmata)?\s*(rivalutazione\s+tra\s+\d+\s+\w+)",
-        r"(?:si\s+consiglia|consigliato|direi\s+di|da|necessaria|programmata)?\s*(controllo\s+tra\s+\d+\s+\w+)",
-        r"(?:si\s+consiglia|consigliato|direi\s+di|da|necessaria|programmata)?\s*(ricontrollo\s+tra\s+\d+\s+\w+)",
-        r"(?:si\s+consiglia|consigliato|direi\s+di|da|necessaria|programmata)?\s*(nuova\s+visita\s+tra\s+\d+\s+\w+)",
-        r"(?:si\s+consiglia|consigliato|direi\s+di|da|necessaria|programmata)?\s*(follow[- ]?up\s+tra\s+\d+\s+\w+)",
-        r"(?:si\s+consiglia|consigliato|direi\s+di|da|necessaria|programmata)?\s*(monitoraggio\s+nei\s+prossimi\s+\d+\s+\w+)",
-        r"(tra\s+\d+\s+giorni)",
-        r"(tra\s+\d+\s+settimane)",
-        r"(tra\s+\d+\s+mesi)",
-        r"(entro\s+\d+\s+\w+)",
-        r"(nei\s+prossimi\s+\d+\s+\w+)",
-        r"(nelle\s+prossime\s+\d+\s+\w+)",
-        r"(tra\s+una\s+settimana)",
-        r"(tra\s+due\s+settimane)",
-        r"(tra\s+un\s+mese)",
-        r"(nei\s+prossimi\s+giorni)",
-        r"(nelle\s+prossime\s+settimane)",
-        r"(da\s+rivalutare\s+tra\s+\d+\s+\w+)",
-        r"(da\s+ricontrollare\s+tra\s+\d+\s+\w+)",
+    if any(k in t for k in ["ricontatto telefonico", "contatto telefonico", "follow up telefonico", "controllo telefonico"]):
+        return {"type": "ricontatto_telefonico", "timing_days": _extract_timing_days(t), "target": None}
+
+    if any(k in t for k in ["ferita", "lesione", "ulcera", "piaga", "medicazione"]) and any(
+        k in t for k in ["rivalutare", "ricontrollare", "controllo", "medicazione successiva"]
+    ):
+        return {"type": "controllo_ferita", "timing_days": _extract_timing_days(t)}
+
+    follow_patterns = [
+        r"\brivalutazione\b",
+        r"\bricontrollo\b",
+        r"\bcontrollo\b",
+        r"\bnuova visita\b",
+        r"\bfollow[- ]?up\b",
+        r"\bmonitoraggio\b",
+        r"\bda rivalutare\b",
+        r"\bda ricontrollare\b",
+        r"\ba breve\b",
+        r"\bnei prossimi giorni\b",
+        r"\bnelle prossime settimane\b",
+        r"\btra qualche giorno\b",
+        r"\btra una settimana\b",
+        r"\btra due settimane\b",
+        r"\btra un mese\b",
+        r"\bentro\b",
+        r"\bprossimo accesso\b",
+        r"\bvisita successiva\b",
+        r"\bprossima visita\b",
     ]
 
-    for pat in patterns:
-        m = re.search(pat, t, flags=re.IGNORECASE)
-        if m:
-            return m.group(1).strip()
-
-    fallback_patterns = [
-        r"\b(ricontatto\s+telefonico)\b",
-        r"\b(rivalutazione\s+clinica)\b",
-        r"\b(controllo\s+clinico)\b",
-        r"\b(monitoraggio\s+clinico)\b",
-    ]
-
-    for pat in fallback_patterns:
-        m = re.search(pat, t, flags=re.IGNORECASE)
-        if m:
-            return m.group(1).strip()
+    if any(re.search(p, t) for p in follow_patterns):
+        return {"type": "controllo", "timing_days": _extract_timing_days(t)}
 
     return None
 
@@ -493,6 +567,14 @@ Schema:
   "critical_issues": []
 }}
 
+For follow_up:
+- if possible return an object like:
+  {{
+    "type": "controllo",
+    "timing_days": 7
+  }}
+- if timing is not clear, timing_days can be null
+
 Clinical note:
 {text}
 """.strip()
@@ -506,7 +588,7 @@ Clinical note:
                 "stream": False,
                 "options": {
                     "temperature": 0,
-                    "num_predict": 120,
+                    "num_predict": 140,
                 },
             },
             timeout=30,
@@ -522,7 +604,6 @@ Clinical note:
         return {"_llm_error": "Model output could not be parsed as JSON."}
 
     vitals = parsed.get("vitals") or {}
-
     interventions = parsed.get("interventions")
     if not isinstance(interventions, list):
         interventions = [str(interventions)] if interventions else []
@@ -530,6 +611,18 @@ Clinical note:
     critical_issues = parsed.get("critical_issues")
     if not isinstance(critical_issues, list):
         critical_issues = [str(critical_issues)] if critical_issues else []
+
+    follow_up = parsed.get("follow_up")
+    if isinstance(follow_up, str):
+        follow_up = {"type": follow_up.strip(), "timing_days": _extract_timing_days(follow_up)}
+    elif isinstance(follow_up, dict):
+        follow_up = {
+            "type": _safe_str(follow_up.get("type")),
+            "timing_days": follow_up.get("timing_days"),
+            **({"target": _safe_str(follow_up.get("target"))} if follow_up.get("target") is not None else {}),
+        }
+    else:
+        follow_up = None
 
     return {
         "reason_for_visit": normalize_reason(_safe_str(parsed.get("reason_for_visit"))),
@@ -540,7 +633,7 @@ Clinical note:
             "temperature": _safe_str(vitals.get("temperature")),
             "spo2": _safe_str(vitals.get("spo2")),
         },
-        "follow_up": _safe_str(parsed.get("follow_up")),
+        "follow_up": follow_up,
         "interventions": normalize_interventions([str(x).strip() for x in interventions if str(x).strip()]),
         "critical_issues": list(dict.fromkeys([str(x).strip() for x in critical_issues if str(x).strip()])),
     }
@@ -561,8 +654,9 @@ def should_call_llm(rule_result: Dict[str, Any]) -> bool:
     enough_vitals = sum(1 for v in vitals.values() if v) >= 2
     has_reason = bool(rule_result.get("reason_for_visit"))
     has_interventions = len(rule_result.get("interventions", [])) > 0
+    has_follow_up = bool(rule_result.get("follow_up"))
 
-    return not (has_reason and enough_vitals and has_interventions)
+    return not (has_reason and enough_vitals and has_interventions and has_follow_up)
 
 
 def hybrid_extract(text: str) -> Dict[str, Any]:
@@ -577,7 +671,7 @@ def hybrid_extract(text: str) -> Dict[str, Any]:
     problems = normalize_problems(text)
 
     rule_result = {
-        "reason_for_visit": reason_rule or "valutazione generale",
+        "reason_for_visit": reason_rule,
         "anamnesis_brief": None,
         "vitals": {
             "blood_pressure": bp_rule,
@@ -585,7 +679,7 @@ def hybrid_extract(text: str) -> Dict[str, Any]:
             "temperature": temp_rule,
             "spo2": spo2_rule,
         },
-        "follow_up": follow_rule or "monitoraggio clinico secondo indicazioni",
+        "follow_up": follow_rule,
         "interventions": interventions_rule,
         "critical_issues": infer_critical_issues(text, spo2_rule),
         "problems_normalized": problems,
@@ -593,6 +687,10 @@ def hybrid_extract(text: str) -> Dict[str, Any]:
     }
 
     if not should_call_llm(rule_result):
+        if not rule_result["reason_for_visit"]:
+            rule_result["reason_for_visit"] = normalize_reason("valutazione generale")
+        if not rule_result["follow_up"]:
+            rule_result["follow_up"] = {"type": "controllo", "timing_days": None}
         return rule_result
 
     llm = call_llm_extract(text)
@@ -605,11 +703,13 @@ def hybrid_extract(text: str) -> Dict[str, Any]:
         "spo2": rule_result["vitals"]["spo2"] or llm_vitals.get("spo2"),
     }
 
-    reason = llm.get("reason_for_visit") or rule_result["reason_for_visit"]
-    reason = normalize_reason(reason or "valutazione generale")
+    reason = rule_result["reason_for_visit"] or llm.get("reason_for_visit")
+    if not reason:
+        reason = "valutazione generale"
+    reason = normalize_reason(reason)
 
     anamnesis = llm.get("anamnesis_brief")
-    follow_up = llm.get("follow_up") or rule_result["follow_up"]
+    follow_up = rule_result["follow_up"] or llm.get("follow_up") or {"type": "controllo", "timing_days": None}
     interventions = normalize_interventions((llm.get("interventions", []) or []) + rule_result["interventions"])
     critical_issues = rule_result["critical_issues"] or llm.get("critical_issues", []) or []
 

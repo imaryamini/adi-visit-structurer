@@ -3,10 +3,10 @@
     "record_id": "ADI-0062",
     "visit_datetime": "2026-03-01T09:30:00",
     "operator_role": "infermiere",
-    "extraction_mode": "rules",
-    "llm_model": null,
+    "extraction_mode": "hybrid",
+    "llm_model": "llama3.1:8b",
     "pipeline_version": "0.4.1",
-    "generated_at": "2026-03-31T00:27:51"
+    "generated_at": "2026-04-22T20:00:11"
   },
   "clinical": {
     "reason_for_visit": "rivalutazione dolore",
@@ -19,15 +19,17 @@
     },
     "interventions": [
       "valutazione_generale",
-      "monitoraggio_parametri_vitali",
+      "educazione_terapeutica",
       "somministrazione_farmaco",
-      "educazione_terapeutica"
+      "monitoraggio_parametri_vitali"
     ],
     "follow_up": "controllo programmato",
     "critical_issues": []
   },
   "coding": {
-    "problems_normalized": [],
+    "problems_normalized": [
+      "dolore_generico"
+    ],
     "problems_suspects": []
   },
   "quality": {

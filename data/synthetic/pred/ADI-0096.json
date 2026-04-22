@@ -3,10 +3,10 @@
     "record_id": "ADI-0096",
     "visit_datetime": "2026-03-17T08:50:00",
     "operator_role": "infermiere",
-    "extraction_mode": "rules",
-    "llm_model": null,
+    "extraction_mode": "hybrid",
+    "llm_model": "llama3.1:8b",
     "pipeline_version": "0.4.1",
-    "generated_at": "2026-03-31T00:27:51"
+    "generated_at": "2026-04-22T19:46:24"
   },
   "clinical": {
     "reason_for_visit": "controllo e gestione catetere",
@@ -18,14 +18,16 @@
       "spo2": null
     },
     "interventions": [
-      "monitoraggio_parametri_vitali",
-      "gestione_catetere"
+      "gestione_catetere",
+      "monitoraggio_parametri_vitali"
     ],
     "follow_up": "controllo programmato",
     "critical_issues": []
   },
   "coding": {
-    "problems_normalized": [],
+    "problems_normalized": [
+      "dolore_generico"
+    ],
     "problems_suspects": []
   },
   "quality": {
