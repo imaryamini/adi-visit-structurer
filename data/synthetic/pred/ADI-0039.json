@@ -3,10 +3,10 @@
     "record_id": "ADI-0039",
     "visit_datetime": "2026-03-14T11:50:00",
     "operator_role": "infermiere",
-    "extraction_mode": "hybrid",
-    "llm_model": "llama3.1:8b",
+    "extraction_mode": "rules",
+    "llm_model": null,
     "pipeline_version": "0.4.1",
-    "generated_at": "2026-04-22T19:59:59"
+    "generated_at": "2026-04-23T09:21:43"
   },
   "clinical": {
     "reason_for_visit": "controllo terapia e monitoraggio parametri",
@@ -18,9 +18,9 @@
       "spo2": null
     },
     "interventions": [
+      "monitoraggio_parametri_vitali",
       "valutazione_generale",
-      "educazione_terapeutica",
-      "monitoraggio_parametri_vitali"
+      "educazione_terapeutica"
     ],
     "follow_up": "controllo tra 7 giorni",
     "critical_issues": []

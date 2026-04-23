@@ -3,10 +3,10 @@
     "record_id": "ADI-0066",
     "visit_datetime": "2026-02-22T08:50:00",
     "operator_role": "infermiere",
-    "extraction_mode": "hybrid",
-    "llm_model": "llama3.1:8b",
+    "extraction_mode": "rules",
+    "llm_model": null,
     "pipeline_version": "0.4.1",
-    "generated_at": "2026-04-22T20:05:11"
+    "generated_at": "2026-04-23T09:21:43"
   },
   "clinical": {
     "reason_for_visit": "medicazione e controllo lesione",
@@ -18,9 +18,9 @@
       "spo2": null
     },
     "interventions": [
-      "medicazione",
+      "monitoraggio_parametri_vitali",
       "valutazione_generale",
-      "monitoraggio_parametri_vitali"
+      "medicazione"
     ],
     "follow_up": "controllo ferita",
     "critical_issues": []

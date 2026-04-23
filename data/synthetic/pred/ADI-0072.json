@@ -3,10 +3,10 @@
     "record_id": "ADI-0072",
     "visit_datetime": "2026-02-26T17:10:00",
     "operator_role": "infermiere",
-    "extraction_mode": "hybrid",
-    "llm_model": "llama3.1:8b",
+    "extraction_mode": "rules",
+    "llm_model": null,
     "pipeline_version": "0.4.1",
-    "generated_at": "2026-04-22T20:05:00"
+    "generated_at": "2026-04-23T09:21:43"
   },
   "clinical": {
     "reason_for_visit": "monitoraggio parametri vitali",

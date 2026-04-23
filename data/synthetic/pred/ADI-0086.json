@@ -3,10 +3,10 @@
     "record_id": "ADI-0086",
     "visit_datetime": "2026-03-05T08:20:00",
     "operator_role": "infermiere",
-    "extraction_mode": "hybrid",
-    "llm_model": "llama3.1:8b",
+    "extraction_mode": "rules",
+    "llm_model": null,
     "pipeline_version": "0.4.1",
-    "generated_at": "2026-04-22T19:47:48"
+    "generated_at": "2026-04-23T09:21:43"
   },
   "clinical": {
     "reason_for_visit": "controllo generale",
@@ -18,8 +18,8 @@
       "spo2": null
     },
     "interventions": [
-      "valutazione_generale",
-      "monitoraggio_parametri_vitali"
+      "monitoraggio_parametri_vitali",
+      "valutazione_generale"
     ],
     "follow_up": "controllo programmato",
     "critical_issues": []

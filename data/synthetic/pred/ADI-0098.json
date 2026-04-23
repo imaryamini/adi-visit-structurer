@@ -3,10 +3,10 @@
     "record_id": "ADI-0098",
     "visit_datetime": "2026-03-21T18:50:00",
     "operator_role": "infermiere",
-    "extraction_mode": "hybrid",
-    "llm_model": "llama3.1:8b",
+    "extraction_mode": "rules",
+    "llm_model": null,
     "pipeline_version": "0.4.1",
-    "generated_at": "2026-04-22T20:04:34"
+    "generated_at": "2026-04-23T09:21:43"
   },
   "clinical": {
     "reason_for_visit": "controllo respiratorio",
@@ -18,17 +18,16 @@
       "spo2": 94
     },
     "interventions": [
-      "educazione_terapeutica",
+      "monitoraggio_parametri_vitali",
       "somministrazione_farmaco",
-      "monitoraggio_parametri_vitali"
+      "educazione_terapeutica"
     ],
     "follow_up": "controllo programmato",
     "critical_issues": []
   },
   "coding": {
     "problems_normalized": [
-      "dispnea",
-      "lieve dispnea"
+      "dispnea"
     ],
     "problems_suspects": []
   },
