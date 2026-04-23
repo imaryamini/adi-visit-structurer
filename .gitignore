@@ -51,12 +51,11 @@ uploads/
 *.mp3
 
 # ========================
-# Reports (optional)
+# Reports (keep only key outputs)
 # ========================
 reports/*.html
+reports/*.csv
 reports/examples/
-
-# keep metrics.json (important for submission)
 !reports/metrics.json
 !reports/run_summary.json
 
